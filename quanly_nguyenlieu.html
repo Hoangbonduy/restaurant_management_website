@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý nguyên liệu</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { padding: 20px; }
+        .btn { margin: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Quản lý nguyên liệu</h2>
+        <a href="dashboard.html" class="btn btn-secondary">Quay lại Dashboard</a>
+        <button class="btn btn-success" data-toggle="modal" data-target="#addIngredientModal">Thêm nguyên liệu</button>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Tên nguyên liệu</th>
+                    <th>Số lượng</th>
+                    <th>Đơn vị</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="ingredientTable"></tbody>
+        </table>
+    </div>
+
+    <!-- Modal thêm nguyên liệu -->
+    <div class="modal fade" id="addIngredientModal" tabindex="-1" role="dialog" aria-labelledby="addIngredientModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addIngredientModalLabel">Thêm nguyên liệu</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addIngredientForm">
+                        <div class="form-group">
+                            <label for="ingredientName">Tên nguyên liệu</label>
+                            <input type="text" class="form-control" id="ingredientName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ingredientQuantity">Số lượng</label>
+                            <input type="number" class="form-control" id="ingredientQuantity" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ingredientUnit">Đơn vị</label>
+                            <input type="text" class="form-control" id="ingredientUnit" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="addIngredient()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal sửa nguyên liệu -->
+    <div class="modal fade" id="editIngredientModal" tabindex="-1" role="dialog" aria-labelledby="editIngredientModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editIngredientModalLabel">Sửa nguyên liệu</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editIngredientForm">
+                        <input type="hidden" id="editIngredientId">
+                        <div class="form-group">
+                            <label for="editIngredientName">Tên nguyên liệu</label>
+                            <input type="text" class="form-control" id="editIngredientName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editIngredientQuantity">Số lượng</label>
+                            <input type="number" class="form-control" id="editIngredientQuantity" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editIngredientUnit">Đơn vị</label>
+                            <input type="text" class="form-control" id="editIngredientUnit" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="saveIngredientEdit()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        let ingredients = [
+            { id: 1, name: 'Thịt bò', quantity: 10, unit: 'kg' },
+            { id: 2, name: 'Bún', quantity: 20, unit: 'kg' }
+        ];
+
+        function renderIngredients() {
+            const tableBody = document.getElementById('ingredientTable');
+            tableBody.innerHTML = '';
+            ingredients.forEach(item => {
+                const row = `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.unit}</td>
+                    <td>
+                        <button class="btn btn-warning" onclick="editIngredient(${item.id})">Sửa</button>
+                        <button class="btn btn-danger" onclick="deleteIngredient(${item.id})">Xóa</button>
+                    </td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function addIngredient() {
+            const name = document.getElementById('ingredientName').value;
+            const quantity = document.getElementById('ingredientQuantity').value;
+            const unit = document.getElementById('ingredientUnit').value;
+            if (name && quantity && unit) {
+                const newId = ingredients.length ? ingredients[ingredients.length - 1].id + 1 : 1;
+                ingredients.push({ id: newId, name, quantity: parseFloat(quantity), unit });
+                renderIngredients();
+                $('#addIngredientModal').modal('hide');
+                document.getElementById('addIngredientForm').reset();
+            } else {
+                alert('Vui lòng nhập đầy đủ thông tin!');
+            }
+        }
+
+        function editIngredient(id) {
+            const item = ingredients.find(i => i.id === id);
+            document.getElementById('editIngredientId').value = item.id;
+            document.getElementById('editIngredientName').value = item.name;
+            document.getElementById('editIngredientQuantity').value = item.quantity;
+            document.getElementById('editIngredientUnit').value = item.unit;
+            $('#editIngredientModal').modal('show');
+        }
+
+        function saveIngredientEdit() {
+            const id = parseInt(document.getElementById('editIngredientId').value);
+            const name = document.getElementById('editIngredientName').value;
+            const quantity = document.getElementById('editIngredientQuantity').value;
+            const unit = document.getElementById('editIngredientUnit').value;
+            if (name && quantity && unit) {
+                const item = ingredients.find(i => i.id === id);
+                item.name = name;
+                item.quantity = parseFloat(quantity);
+                item.unit = unit;
+                renderIngredients();
+                $('#editIngredientModal').modal('hide');
+            } else {
+                alert('Vui lòng nhập đầy đủ thông tin!');
+            }
+        }
+
+        function deleteIngredient(id) {
+            if (confirm('Bạn có chắc muốn xóa nguyên liệu này?')) {
+                ingredients = ingredients.filter(i => i.id !== id);
+                renderIngredients();
+            }
+        }
+
+        renderIngredients();
+    </script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Thanh toán</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { padding: 20px; }
+        .btn { margin: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Quản lý Thanh toán</h2>
+        <a href="dashboard.html" class="btn btn-secondary">Quay lại Dashboard</a>
+        <button class="btn btn-success" data-toggle="modal" data-target="#addPaymentModal">Thêm thanh toán</button>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Bàn số</th>
+                    <th>Số tiền</th>
+                    <th>Phương thức</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="paymentTable"></tbody>
+        </table>
+    </div>
+
+    <!-- Modal thêm thanh toán -->
+    <div class="modal fade" id="addPaymentModal" tabindex="-1" role="dialog" aria-labelledby="addPaymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addPaymentModalLabel">Thêm thanh toán</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addPaymentForm">
+                        <div class="form-group">
+                            <label for="paymentTableNumber">Bàn số</label>
+                            <input type="number" class="form-control" id="paymentTableNumber" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentAmount">Số tiền</label>
+                            <input type="number" class="form-control" id="paymentAmount" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentMethod">Phương thức</label>
+                            <select class="form-control" id="paymentMethod">
+                                <option>Tiền mặt</option>
+                                <option>Thẻ</option>
+                                <option>Chuyển khoản</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="addPayment()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal sửa thanh toán -->
+    <div class="modal fade" id="editPaymentModal" tabindex="-1" role="dialog" aria-labelledby="editPaymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editPaymentModalLabel">Sửa thanh toán</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editPaymentForm">
+                        <input type="hidden" id="editPaymentId">
+                        <div class="form-group">
+                            <label for="editPaymentTableNumber">Bàn số</label>
+                            <input type="number" class="form-control" id="editPaymentTableNumber" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPaymentAmount">Số tiền</label>
+                            <input type="number" class="form-control" id="editPaymentAmount" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPaymentMethod">Phương thức</label>
+                            <select class="form-control" id="editPaymentMethod">
+                                <option>Tiền mặt</option>
+                                <option>Thẻ</option>
+                                <option>Chuyển khoản</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="savePaymentEdit()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        let payments = [];
+
+        function renderPayments() {
+            const tbody = document.getElementById('paymentTable'); tbody.innerHTML='';
+            payments.forEach(p => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${p.id}</td>
+                        <td>${p.table}</td>
+                        <td>${p.amount}</td>
+                        <td>${p.method}</td>
+                        <td>
+                            <button class="btn btn-warning" onclick="editPayment(${p.id})">Sửa</button>
+                            <button class="btn btn-danger" onclick="deletePayment(${p.id})">Xóa</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function addPayment() {
+            const table = document.getElementById('paymentTableNumber').value;
+            const amount = document.getElementById('paymentAmount').value;
+            const method = document.getElementById('paymentMethod').value;
+            if (table && amount && method) {
+                const id = payments.length ? payments[payments.length-1].id+1 : 1;
+                payments.push({id, table, amount, method}); renderPayments();
+                $('#addPaymentModal').modal('hide'); document.getElementById('addPaymentForm').reset();
+            } else alert('Vui lòng điền đầy đủ thông tin!');
+        }
+
+        function editPayment(id) {
+            const p=payments.find(x=>x.id===id);
+            document.getElementById('editPaymentId').value=p.id;
+            document.getElementById('editPaymentTableNumber').value=p.table;
+            document.getElementById('editPaymentAmount').value=p.amount;
+            document.getElementById('editPaymentMethod').value=p.method;
+            $('#editPaymentModal').modal('show');
+        }
+
+        function savePaymentEdit() {
+            const id=+document.getElementById('editPaymentId').value;
+            const table=document.getElementById('editPaymentTableNumber').value;
+            const amount=document.getElementById('editPaymentAmount').value;
+            const method=document.getElementById('editPaymentMethod').value;
+            if (table && amount && method) {
+                const p=payments.find(x=>x.id===id);
+                p.table=table; p.amount=amount; p.method=method;
+                renderPayments(); $('#editPaymentModal').modal('hide');
+            } else alert('Vui lòng điền đầy đủ thông tin!');
+        }
+
+        function deletePayment(id) {
+            if (confirm('Bạn có chắc muốn xóa?')) { payments=payments.filter(x=>x.id!==id); renderPayments(); }
+        }
+
+        renderPayments();
+    </script>
+</body>
+</html>

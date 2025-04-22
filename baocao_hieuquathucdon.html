@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Báo cáo Hiệu quả thực đơn</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style> body { padding: 20px; } .btn { margin: 5px; } canvas { max-width: 100%; } </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Báo cáo Hiệu quả thực đơn</h2>
+    <a href="dashboard.html" class="btn btn-secondary">Quay lại Dashboard</a>
+    <canvas id="menuChart" height="100"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const ctx4 = document.getElementById('menuChart').getContext('2d');
+    new Chart(ctx4, {
+      type: 'pie',
+      data: {
+        labels: ['Phở bò','Bún chả','Cơm tấm','Bánh mì','Khác'],
+        datasets: [{
+          data: [40, 25, 15, 10, 10]
+        }]
+      },
+      options: { responsive: true }
+    });
+  </script>
+</body>
+</html>

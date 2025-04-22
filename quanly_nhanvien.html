@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý nhân viên</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { padding: 20px; }
+        .btn { margin: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Quản lý nhân viên</h2>
+        <a href="dashboard.html" class="btn btn-secondary">Quay lại Dashboard</a>
+        <button class="btn btn-success" data-toggle="modal" data-target="#addEmployeeModal">Thêm nhân viên</button>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Tên nhân viên</th>
+                    <th>Chức vụ</th>
+                    <th>Số điện thoại</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="employeeTable"></tbody>
+        </table>
+    </div>
+
+    <!-- Modal thêm nhân viên -->
+    <div class="modal fade" id="addEmployeeModal" tabindex="-1" role="dialog" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEmployeeModalLabel">Thêm nhân viên</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addEmployeeForm">
+                        <div class="form-group">
+                            <label for="employeeName">Tên nhân viên</label>
+                            <input type="text" class="form-control" id="employeeName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="employeePosition">Chức vụ</label>
+                            <input type="text" class="form-control" id="employeePosition" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="employeePhone">Số điện thoại</label>
+                            <input type="text" class="form-control" id="employeePhone" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="addEmployee()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal sửa nhân viên -->
+    <div class="modal fade" id="editEmployeeModal" tabindex="-1" role="dialog" aria-labelledby="editEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editEmployeeModalLabel">Sửa nhân viên</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editEmployeeForm">
+                        <input type="hidden" id="editEmployeeId">
+                        <div class="form-group">
+                            <label for="editEmployeeName">Tên nhân viên</label>
+                            <input type="text" class="form-control" id="editEmployeeName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editEmployeePosition">Chức vụ</label>
+                            <input type="text" class="form-control" id="editEmployeePosition" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editEmployeePhone">Số điện thoại</label>
+                            <input type="text" class="form-control" id="editEmployeePhone" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEmployeeEdit()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        let employees = [
+            { id: 1, name: 'Nguyễn Văn A', position: 'Quản lý', phone: '0123456789' },
+            { id: 2, name: 'Trần Thị B', position: 'Nhân viên', phone: '0987654321' }
+        ];
+
+        function renderEmployees() {
+            const tableBody = document.getElementById('employeeTable');
+            tableBody.innerHTML = '';
+            employees.forEach(employee => {
+                const row = `<tr>
+                    <td>${employee.name}</td>
+                    <td>${employee.position}</td>
+                    <td>${employee.phone}</td>
+                    <td>
+                        <button class="btn btn-warning" onclick="editEmployee(${employee.id})">Sửa</button>
+                        <button class="btn btn-danger" onclick="deleteEmployee(${employee.id})">Xóa</button>
+                    </td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function addEmployee() {
+            const name = document.getElementById('employeeName').value;
+            const position = document.getElementById('employeePosition').value;
+            const phone = document.getElementById('employeePhone').value;
+            if (name && position && phone) {
+                const newId = employees.length ? employees[employees.length - 1].id + 1 : 1;
+                employees.push({ id: newId, name, position, phone });
+                renderEmployees();
+                $('#addEmployeeModal').modal('hide');
+                document.getElementById('addEmployeeForm').reset();
+            } else {
+                alert('Vui lòng nhập đầy đủ thông tin!');
+            }
+        }
+
+        function editEmployee(id) {
+            const employee = employees.find(e => e.id === id);
+            document.getElementById('editEmployeeId').value = employee.id;
+            document.getElementById('editEmployeeName').value = employee.name;
+            document.getElementById('editEmployeePosition').value = employee.position;
+            document.getElementById('editEmployeePhone').value = employee.phone;
+            $('#editEmployeeModal').modal('show');
+        }
+
+        function saveEmployeeEdit() {
+            const id = parseInt(document.getElementById('editEmployeeId').value);
+            const name = document.getElementById('editEmployeeName').value;
+            const position = document.getElementById('editEmployeePosition').value;
+            const phone = document.getElementById('editEmployeePhone').value;
+            if (name && position && phone) {
+                const employee = employees.find(e => e.id === id);
+                employee.name = name;
+                employee.position = position;
+                employee.phone = phone;
+                renderEmployees();
+                $('#editEmployeeModal').modal('hide');
+            } else {
+                alert('Vui lòng nhập đầy đủ thông tin!');
+            }
+        }
+
+        function deleteEmployee(id) {
+            if (confirm('Bạn có chắc muốn xóa nhân viên này?')) {
+                employees = employees.filter(e => e.id !== id);
+                renderEmployees();
+            }
+        }
+
+        renderEmployees();
+    </script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Đặt bàn</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { padding: 20px; }
+        .btn { margin: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Quản lý Đặt bàn</h2>
+        <a href="dashboard.html" class="btn btn-secondary">Quay lại Dashboard</a>
+        <button class="btn btn-success" data-toggle="modal" data-target="#addBookingModal">Thêm đặt bàn</button>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Bàn số</th>
+                    <th>Tên khách</th>
+                    <th>Điện thoại</th>
+                    <th>Thời gian</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="bookingTable"></tbody>
+        </table>
+    </div>
+
+    <!-- Modal thêm đặt bàn -->
+    <div class="modal fade" id="addBookingModal" tabindex="-1" role="dialog" aria-labelledby="addBookingModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addBookingModalLabel">Thêm đặt bàn</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addBookingForm">
+                        <div class="form-group">
+                            <label for="tableNumber">Bàn số</label>
+                            <input type="number" class="form-control" id="tableNumber" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="customerName">Tên khách</label>
+                            <input type="text" class="form-control" id="customerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="customerPhone">Điện thoại</label>
+                            <input type="text" class="form-control" id="customerPhone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bookingTime">Thời gian</label>
+                            <input type="datetime-local" class="form-control" id="bookingTime" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="addBooking()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal sửa đặt bàn -->
+    <div class="modal fade" id="editBookingModal" tabindex="-1" role="dialog" aria-labelledby="editBookingModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editBookingModalLabel">Sửa đặt bàn</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editBookingForm">
+                        <input type="hidden" id="editBookingId">
+                        <div class="form-group">
+                            <label for="editTableNumber">Bàn số</label>
+                            <input type="number" class="form-control" id="editTableNumber" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editCustomerName">Tên khách</label>
+                            <input type="text" class="form-control" id="editCustomerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editCustomerPhone">Điện thoại</label>
+                            <input type="text" class="form-control" id="editCustomerPhone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editBookingTime">Thời gian</label>
+                            <input type="datetime-local" class="form-control" id="editBookingTime" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="saveBookingEdit()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        let bookings = [];
+
+        function renderBookings() {
+            const tbody = document.getElementById('bookingTable');
+            tbody.innerHTML = '';
+            bookings.forEach(b => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${b.table}</td>
+                        <td>${b.name}</td>
+                        <td>${b.phone}</td>
+                        <td>${new Date(b.time).toLocaleString()}</td>
+                        <td>
+                            <button class="btn btn-warning" onclick="editBooking(${b.id})">Sửa</button>
+                            <button class="btn btn-danger" onclick="deleteBooking(${b.id})">Xóa</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function addBooking() {
+            const table = document.getElementById('tableNumber').value;
+            const name = document.getElementById('customerName').value;
+            const phone = document.getElementById('customerPhone').value;
+            const time = document.getElementById('bookingTime').value;
+            if (table && name && phone && time) {
+                const id = bookings.length ? bookings[bookings.length-1].id+1 : 1;
+                bookings.push({id, table, name, phone, time});
+                renderBookings();
+                $('#addBookingModal').modal('hide');
+                document.getElementById('addBookingForm').reset();
+            } else alert('Vui lòng điền đầy đủ thông tin!');
+        }
+
+        function editBooking(id) {
+            const b = bookings.find(x=>x.id===id);
+            document.getElementById('editBookingId').value = b.id;
+            document.getElementById('editTableNumber').value = b.table;
+            document.getElementById('editCustomerName').value = b.name;
+            document.getElementById('editCustomerPhone').value = b.phone;
+            document.getElementById('editBookingTime').value = b.time;
+            $('#editBookingModal').modal('show');
+        }
+
+        function saveBookingEdit() {
+            const id = +document.getElementById('editBookingId').value;
+            const table = document.getElementById('editTableNumber').value;
+            const name = document.getElementById('editCustomerName').value;
+            const phone = document.getElementById('editCustomerPhone').value;
+            const time = document.getElementById('editBookingTime').value;
+            if (table && name && phone && time) {
+                const b = bookings.find(x=>x.id===id);
+                b.table=table; b.name=name; b.phone=phone; b.time=time;
+                renderBookings();
+                $('#editBookingModal').modal('hide');
+            } else alert('Vui lòng điền đầy đủ thông tin!');
+        }
+
+        function deleteBooking(id) {
+            if (confirm('Bạn có chắc muốn xóa?')) {
+                bookings = bookings.filter(x=>x.id!==id);
+                renderBookings();
+            }
+        }
+
+        renderBookings();
+    </script>
+</body>
+</html>

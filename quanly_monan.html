@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý món ăn</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { padding: 20px; }
+        .btn { margin: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Quản lý món ăn</h2>
+        <a href="dashboard.html" class="btn btn-secondary">Quay lại Dashboard</a>
+        <button class="btn btn-success" data-toggle="modal" data-target="#addDishModal">Thêm món ăn</button>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Tên món</th>
+                    <th>Giá</th>
+                    <th>Mô tả</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="dishTable"></tbody>
+        </table>
+    </div>
+
+    <!-- Modal thêm món ăn -->
+    <div class="modal fade" id="addDishModal" tabindex="-1" role="dialog" aria-labelledby="addDishModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addDishModalLabel">Thêm món ăn</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addDishForm">
+                        <div class="form-group">
+                            <label for="dishName">Tên món</label>
+                            <input type="text" class="form-control" id="dishName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dishPrice">Giá</label>
+                            <input type="text" class="form-control" id="dishPrice" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dishDescription">Mô tả</label>
+                            <textarea class="form-control" id="dishDescription" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="addDish()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal sửa món ăn -->
+    <div class="modal fade" id="editDishModal" tabindex="-1" role="dialog" aria-labelledby="editDishModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editDishModalLabel">Sửa món ăn</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editDishForm">
+                        <input type="hidden" id="editDishId">
+                        <div class="form-group">
+                            <label for="editDishName">Tên món</label>
+                            <input type="text" class="form-control" id="editDishName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editDishPrice">Giá</label>
+                            <input type="text" class="form-control" id="editDishPrice" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editDishDescription">Mô tả</label>
+                            <textarea class="form-control" id="editDishDescription" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="saveDishEdit()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        let dishes = [
+            { id: 1, name: 'Phở bò', price: '50,000 VND', description: 'Món phở truyền thống với thịt bò' },
+            { id: 2, name: 'Bún chả', price: '40,000 VND', description: 'Bún với thịt nướng và nước mắm' }
+        ];
+
+        function renderDishes() {
+            const tableBody = document.getElementById('dishTable');
+            tableBody.innerHTML = '';
+            dishes.forEach(dish => {
+                const row = `
+                <tr>
+                    <td>${dish.name}</td>
+                    <td>${dish.price}</td>
+                    <td>${dish.description}</td>
+                    <td>
+                        <button class="btn btn-warning" onclick="editDish(${dish.id})">Sửa</button>
+                        <button class="btn btn-danger" onclick="deleteDish(${dish.id})">Xóa</button>
+                    </td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function addDish() {
+            const name = document.getElementById('dishName').value;
+            const price = document.getElementById('dishPrice').value;
+            const description = document.getElementById('dishDescription').value;
+            if (name && price && description) {
+                const newId = dishes.length ? dishes[dishes.length - 1].id + 1 : 1;
+                dishes.push({ id: newId, name, price, description });
+                renderDishes();
+                $('#addDishModal').modal('hide');
+                document.getElementById('addDishForm').reset();
+            } else {
+                alert('Vui lòng nhập đầy đủ thông tin!');
+            }
+        }
+
+        function editDish(id) {
+            const dish = dishes.find(d => d.id === id);
+            document.getElementById('editDishId').value = dish.id;
+            document.getElementById('editDishName').value = dish.name;
+            document.getElementById('editDishPrice').value = dish.price;
+            document.getElementById('editDishDescription').value = dish.description;
+            $('#editDishModal').modal('show');
+        }
+
+        function saveDishEdit() {
+            const id = parseInt(document.getElementById('editDishId').value);
+            const name = document.getElementById('editDishName').value;
+            const price = document.getElementById('editDishPrice').value;
+            const description = document.getElementById('editDishDescription').value;
+            if (name && price && description) {
+                const dish = dishes.find(d => d.id === id);
+                dish.name = name;
+                dish.price = price;
+                dish.description = description;
+                renderDishes();
+                $('#editDishModal').modal('hide');
+            } else {
+                alert('Vui lòng nhập đầy đủ thông tin!');
+            }
+        }
+
+        function deleteDish(id) {
+            if (confirm('Bạn có chắc muốn xóa món ăn này?')) {
+                dishes = dishes.filter(d => d.id !== id);
+                renderDishes();
+            }
+        }
+
+        renderDishes();
+    </script>
+</body>
+</html>
