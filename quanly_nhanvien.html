@@ -18,9 +18,13 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
+                    <th>Mã nhân viên</th>
                     <th>Tên nhân viên</th>
-                    <th>Chức vụ</th>
+                    <th>Mã chi nhánh</th>
+                    <th>Ngày sinh</th>
+                    <th>Giới tính</th>
                     <th>Số điện thoại</th>
+                    <th>Địa chỉ</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
@@ -41,16 +45,36 @@
                 <div class="modal-body">
                     <form id="addEmployeeForm">
                         <div class="form-group">
+                            <label for="employeeCode">Mã nhân viên</label>
+                            <input type="text" class="form-control" id="employeeCode" required>
+                        </div>
+                        <div class="form-group">
                             <label for="employeeName">Tên nhân viên</label>
                             <input type="text" class="form-control" id="employeeName" required>
                         </div>
                         <div class="form-group">
-                            <label for="employeePosition">Chức vụ</label>
-                            <input type="text" class="form-control" id="employeePosition" required>
+                            <label for="branchCode">Mã chi nhánh</label>
+                            <input type="text" class="form-control" id="branchCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="employeeDob">Ngày sinh</label>
+                            <input type="date" class="form-control" id="employeeDob" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="employeeGender">Giới tính</label>
+                            <select class="form-control" id="employeeGender" required>
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                                <option value="Khác">Khác</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="employeePhone">Số điện thoại</label>
                             <input type="text" class="form-control" id="employeePhone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="employeeAddress">Địa chỉ</label>
+                            <input type="text" class="form-control" id="employeeAddress" required>
                         </div>
                     </form>
                 </div>
@@ -76,16 +100,36 @@
                     <form id="editEmployeeForm">
                         <input type="hidden" id="editEmployeeId">
                         <div class="form-group">
+                            <label for="editEmployeeCode">Mã nhân viên</label>
+                            <input type="text" class="form-control" id="editEmployeeCode" required>
+                        </div>
+                        <div class="form-group">
                             <label for="editEmployeeName">Tên nhân viên</label>
                             <input type="text" class="form-control" id="editEmployeeName" required>
                         </div>
                         <div class="form-group">
-                            <label for="editEmployeePosition">Chức vụ</label>
-                            <input type="text" class="form-control" id="editEmployeePosition" required>
+                            <label for="editBranchCode">Mã chi nhánh</label>
+                            <input type="text" class="form-control" id="editBranchCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editEmployeeDob">Ngày sinh</label>
+                            <input type="date" class="form-control" id="editEmployeeDob" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editEmployeeGender">Giới tính</label>
+                            <select class="form-control" id="editEmployeeGender" required>
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                                <option value="Khác">Khác</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="editEmployeePhone">Số điện thoại</label>
                             <input type="text" class="form-control" id="editEmployeePhone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editEmployeeAddress">Địa chỉ</label>
+                            <input type="text" class="form-control" id="editEmployeeAddress" required>
                         </div>
                     </form>
                 </div>
@@ -102,21 +146,25 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         let employees = [
-            { id: 1, name: 'Nguyễn Văn A', position: 'Quản lý', phone: '0123456789' },
-            { id: 2, name: 'Trần Thị B', position: 'Nhân viên', phone: '0987654321' }
+            { id: 1, code: 'NV001', name: 'Nguyễn Văn A', branch: 'CN001', dob: '1990-01-01', gender: 'Nam', phone: '0123456789', address: '123 Đường ABC, TP. HCM' },
+            { id: 2, code: 'NV002', name: 'Trần Thị B', branch: 'CN002', dob: '1992-05-15', gender: 'Nữ', phone: '0987654321', address: '456 Đường XYZ, Hà Nội' }
         ];
 
         function renderEmployees() {
             const tableBody = document.getElementById('employeeTable');
             tableBody.innerHTML = '';
-            employees.forEach(employee => {
+            employees.forEach(emp => {
                 const row = `<tr>
-                    <td>${employee.name}</td>
-                    <td>${employee.position}</td>
-                    <td>${employee.phone}</td>
+                    <td>${emp.code}</td>
+                    <td>${emp.name}</td>
+                    <td>${emp.branch}</td>
+                    <td>${emp.dob}</td>
+                    <td>${emp.gender}</td>
+                    <td>${emp.phone}</td>
+                    <td>${emp.address}</td>
                     <td>
-                        <button class="btn btn-warning" onclick="editEmployee(${employee.id})">Sửa</button>
-                        <button class="btn btn-danger" onclick="deleteEmployee(${employee.id})">Xóa</button>
+                        <button class="btn btn-warning" onclick="editEmployee(${emp.id})">Sửa</button>
+                        <button class="btn btn-danger" onclick="deleteEmployee(${emp.id})">Xóa</button>
                     </td>
                 </tr>`;
                 tableBody.innerHTML += row;
@@ -124,12 +172,16 @@
         }
 
         function addEmployee() {
+            const code = document.getElementById('employeeCode').value;
             const name = document.getElementById('employeeName').value;
-            const position = document.getElementById('employeePosition').value;
+            const branch = document.getElementById('branchCode').value;
+            const dob = document.getElementById('employeeDob').value;
+            const gender = document.getElementById('employeeGender').value;
             const phone = document.getElementById('employeePhone').value;
-            if (name && position && phone) {
+            const address = document.getElementById('employeeAddress').value;
+            if (code && name && branch && dob && gender && phone && address) {
                 const newId = employees.length ? employees[employees.length - 1].id + 1 : 1;
-                employees.push({ id: newId, name, position, phone });
+                employees.push({ id: newId, code, name, branch, dob, gender, phone, address });
                 renderEmployees();
                 $('#addEmployeeModal').modal('hide');
                 document.getElementById('addEmployeeForm').reset();
@@ -139,24 +191,36 @@
         }
 
         function editEmployee(id) {
-            const employee = employees.find(e => e.id === id);
-            document.getElementById('editEmployeeId').value = employee.id;
-            document.getElementById('editEmployeeName').value = employee.name;
-            document.getElementById('editEmployeePosition').value = employee.position;
-            document.getElementById('editEmployeePhone').value = employee.phone;
+            const emp = employees.find(e => e.id === id);
+            document.getElementById('editEmployeeId').value = emp.id;
+            document.getElementById('editEmployeeCode').value = emp.code;
+            document.getElementById('editEmployeeName').value = emp.name;
+            document.getElementById('editBranchCode').value = emp.branch;
+            document.getElementById('editEmployeeDob').value = emp.dob;
+            document.getElementById('editEmployeeGender').value = emp.gender;
+            document.getElementById('editEmployeePhone').value = emp.phone;
+            document.getElementById('editEmployeeAddress').value = emp.address;
             $('#editEmployeeModal').modal('show');
         }
 
         function saveEmployeeEdit() {
             const id = parseInt(document.getElementById('editEmployeeId').value);
+            const code = document.getElementById('editEmployeeCode').value;
             const name = document.getElementById('editEmployeeName').value;
-            const position = document.getElementById('editEmployeePosition').value;
+            const branch = document.getElementById('editBranchCode').value;
+            const dob = document.getElementById('editEmployeeDob').value;
+            const gender = document.getElementById('editEmployeeGender').value;
             const phone = document.getElementById('editEmployeePhone').value;
-            if (name && position && phone) {
-                const employee = employees.find(e => e.id === id);
-                employee.name = name;
-                employee.position = position;
-                employee.phone = phone;
+            const address = document.getElementById('editEmployeeAddress').value;
+            if (code && name && branch && dob && gender && phone && address) {
+                const emp = employees.find(e => e.id === id);
+                emp.code = code;
+                emp.name = name;
+                emp.branch = branch;
+                emp.dob = dob;
+                emp.gender = gender;
+                emp.phone = phone;
+                emp.address = address;
                 renderEmployees();
                 $('#editEmployeeModal').modal('hide');
             } else {

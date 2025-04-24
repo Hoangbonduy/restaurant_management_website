@@ -18,9 +18,9 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
+                    <th>Mã chi nhánh</th>
                     <th>Tên chi nhánh</th>
                     <th>Địa chỉ</th>
-                    <th>Số điện thoại</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
@@ -41,16 +41,16 @@
                 <div class="modal-body">
                     <form id="addBranchForm">
                         <div class="form-group">
+                            <label for="branchCode">Mã chi nhánh</label>
+                            <input type="text" class="form-control" id="branchCode" required>
+                        </div>
+                        <div class="form-group">
                             <label for="branchName">Tên chi nhánh</label>
                             <input type="text" class="form-control" id="branchName" required>
                         </div>
                         <div class="form-group">
                             <label for="branchAddress">Địa chỉ</label>
                             <input type="text" class="form-control" id="branchAddress" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="branchPhone">Số điện thoại</label>
-                            <input type="text" class="form-control" id="branchPhone" required>
                         </div>
                     </form>
                 </div>
@@ -76,16 +76,16 @@
                     <form id="editBranchForm">
                         <input type="hidden" id="editBranchId">
                         <div class="form-group">
+                            <label for="editBranchCode">Mã chi nhánh</label>
+                            <input type="text" class="form-control" id="editBranchCode" required>
+                        </div>
+                        <div class="form-group">
                             <label for="editBranchName">Tên chi nhánh</label>
                             <input type="text" class="form-control" id="editBranchName" required>
                         </div>
                         <div class="form-group">
                             <label for="editBranchAddress">Địa chỉ</label>
                             <input type="text" class="form-control" id="editBranchAddress" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editBranchPhone">Số điện thoại</label>
-                            <input type="text" class="form-control" id="editBranchPhone" required>
                         </div>
                     </form>
                 </div>
@@ -102,8 +102,8 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         let branches = [
-            { id: 1, name: 'Chi nhánh 1', address: '123 Đường ABC, TP. HCM', phone: '0123456789' },
-            { id: 2, name: 'Chi nhánh 2', address: '456 Đường XYZ, Hà Nội', phone: '0987654321' }
+            { id: 1, code: 'CN001', name: 'Chi nhánh 1', address: '123 Đường ABC, TP. HCM' },
+            { id: 2, code: 'CN002', name: 'Chi nhánh 2', address: '456 Đường XYZ, Hà Nội' }
         ];
 
         function renderBranches() {
@@ -111,9 +111,9 @@
             tableBody.innerHTML = '';
             branches.forEach(branch => {
                 const row = `<tr>
+                    <td>${branch.code}</td>
                     <td>${branch.name}</td>
                     <td>${branch.address}</td>
-                    <td>${branch.phone}</td>
                     <td>
                         <button class="btn btn-warning" onclick="editBranch(${branch.id})">Sửa</button>
                         <button class="btn btn-danger" onclick="deleteBranch(${branch.id})">Xóa</button>
@@ -124,12 +124,12 @@
         }
 
         function addBranch() {
+            const code = document.getElementById('branchCode').value;
             const name = document.getElementById('branchName').value;
             const address = document.getElementById('branchAddress').value;
-            const phone = document.getElementById('branchPhone').value;
-            if (name && address && phone) {
+            if (code && name && address) {
                 const newId = branches.length ? branches[branches.length - 1].id + 1 : 1;
-                branches.push({ id: newId, name, address, phone });
+                branches.push({ id: newId, code, name, address });
                 renderBranches();
                 $('#addBranchModal').modal('hide');
                 document.getElementById('addBranchForm').reset();
@@ -141,22 +141,22 @@
         function editBranch(id) {
             const branch = branches.find(b => b.id === id);
             document.getElementById('editBranchId').value = branch.id;
+            document.getElementById('editBranchCode').value = branch.code;
             document.getElementById('editBranchName').value = branch.name;
             document.getElementById('editBranchAddress').value = branch.address;
-            document.getElementById('editBranchPhone').value = branch.phone;
             $('#editBranchModal').modal('show');
         }
 
         function saveBranchEdit() {
             const id = parseInt(document.getElementById('editBranchId').value);
+            const code = document.getElementById('editBranchCode').value;
             const name = document.getElementById('editBranchName').value;
             const address = document.getElementById('editBranchAddress').value;
-            const phone = document.getElementById('editBranchPhone').value;
-            if (name && address && phone) {
+            if (code && name && address) {
                 const branch = branches.find(b => b.id === id);
+                branch.code = code;
                 branch.name = name;
                 branch.address = address;
-                branch.phone = phone;
                 renderBranches();
                 $('#editBranchModal').modal('hide');
             } else {

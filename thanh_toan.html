@@ -3,104 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Thanh toán</title>
+    <title>Quản lý Hoá đơn</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body { padding: 20px; }
         .btn { margin: 5px; }
+        #detailSection { margin-top: 40px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Quản lý Thanh toán</h2>
+        <h2>Danh mục Hoá đơn</h2>
         <a href="dashboard.html" class="btn btn-secondary">Quay lại Dashboard</a>
-        <button class="btn btn-success" data-toggle="modal" data-target="#addPaymentModal">Thêm thanh toán</button>
+        <button class="btn btn-success" data-toggle="modal" data-target="#invoiceModal" onclick="openInvoiceModal()">Thêm hoá đơn</button>
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Bàn số</th>
-                    <th>Số tiền</th>
-                    <th>Phương thức</th>
+                    <th>Mã hoá đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Chi nhánh</th>
+                    <th>Thời gian tạo</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
-            <tbody id="paymentTable"></tbody>
+            <tbody id="invoiceTable"></tbody>
         </table>
+
+        <div id="detailSection" style="display:none;">
+            <h3>Chi tiết hoá đơn: <span id="currentInvoiceId"></span></h3>
+            <button class="btn btn-success" data-toggle="modal" data-target="#detailModal" onclick="openDetailModal()">Thêm chi tiết</button>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Mã món ăn</th>
+                        <th>Số lượng</th>
+                        <th>Đơn giá</th>
+                        <th>Thành tiền</th>
+                        <th>Ghi chú</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="detailTable"></tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- Modal thêm thanh toán -->
-    <div class="modal fade" id="addPaymentModal" tabindex="-1" role="dialog" aria-labelledby="addPaymentModalLabel" aria-hidden="true">
+    <!-- Modal Invoice Add/Edit -->
+    <div class="modal fade" id="invoiceModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addPaymentModalLabel">Thêm thanh toán</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <h5 class="modal-title" id="invoiceModalLabel">Thêm/Sửa hoá đơn</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <form id="addPaymentForm">
+                    <form id="invoiceForm">
+                        <input type="hidden" id="invoiceId">
                         <div class="form-group">
-                            <label for="paymentTableNumber">Bàn số</label>
-                            <input type="number" class="form-control" id="paymentTableNumber" required>
+                            <label for="invoiceCustomer">Khách hàng</label>
+                            <input type="text" class="form-control" id="invoiceCustomer" required>
                         </div>
                         <div class="form-group">
-                            <label for="paymentAmount">Số tiền</label>
-                            <input type="number" class="form-control" id="paymentAmount" required>
+                            <label for="invoiceBranch">Chi nhánh</label>
+                            <input type="text" class="form-control" id="invoiceBranch" required>
                         </div>
                         <div class="form-group">
-                            <label for="paymentMethod">Phương thức</label>
-                            <select class="form-control" id="paymentMethod">
-                                <option>Tiền mặt</option>
-                                <option>Thẻ</option>
-                                <option>Chuyển khoản</option>
-                            </select>
+                            <label for="invoiceTime">Thời gian tạo</label>
+                            <input type="datetime-local" class="form-control" id="invoiceTime" required>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-primary" onclick="addPayment()">Lưu</button>
+                    <button class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button class="btn btn-primary" onclick="saveInvoice()">Lưu</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal sửa thanh toán -->
-    <div class="modal fade" id="editPaymentModal" tabindex="-1" role="dialog" aria-labelledby="editPaymentModalLabel" aria-hidden="true">
+    <!-- Modal Detail Add/Edit -->
+    <div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editPaymentModalLabel">Sửa thanh toán</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <h5 class="modal-title" id="detailModalLabel">Thêm/Sửa chi tiết</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <form id="editPaymentForm">
-                        <input type="hidden" id="editPaymentId">
+                    <form id="detailForm">
+                        <input type="hidden" id="detailId">
                         <div class="form-group">
-                            <label for="editPaymentTableNumber">Bàn số</label>
-                            <input type="number" class="form-control" id="editPaymentTableNumber" required>
+                            <label for="detailDishId">Mã món ăn</label>
+                            <input type="text" class="form-control" id="detailDishId" required>
                         </div>
                         <div class="form-group">
-                            <label for="editPaymentAmount">Số tiền</label>
-                            <input type="number" class="form-control" id="editPaymentAmount" required>
+                            <label for="detailQuantity">Số lượng</label>
+                            <input type="number" class="form-control" id="detailQuantity" required>
                         </div>
                         <div class="form-group">
-                            <label for="editPaymentMethod">Phương thức</label>
-                            <select class="form-control" id="editPaymentMethod">
-                                <option>Tiền mặt</option>
-                                <option>Thẻ</option>
-                                <option>Chuyển khoản</option>
-                            </select>
+                            <label for="detailUnitPrice">Đơn giá</label>
+                            <input type="number" class="form-control" id="detailUnitPrice" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="detailNote">Ghi chú</label>
+                            <textarea class="form-control" id="detailNote" rows="2"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-primary" onclick="savePaymentEdit()">Lưu</button>
+                    <button class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                    <button class="btn btn-primary" onclick="saveDetail()">Lưu</button>
                 </div>
             </div>
         </div>
@@ -110,62 +122,131 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        let payments = [];
+        let invoices = [];
+        let invoiceDetails = [];
+        let currentInvoice = null;
 
-        function renderPayments() {
-            const tbody = document.getElementById('paymentTable'); tbody.innerHTML='';
-            payments.forEach(p => {
+        function renderInvoices() {
+            const tbody = document.getElementById('invoiceTable'); tbody.innerHTML='';
+            invoices.forEach(inv => {
                 tbody.innerHTML += `
                     <tr>
-                        <td>${p.id}</td>
-                        <td>${p.table}</td>
-                        <td>${p.amount}</td>
-                        <td>${p.method}</td>
+                        <td>${inv.id}</td>
+                        <td>${inv.customer}</td>
+                        <td>${inv.branch}</td>
+                        <td>${new Date(inv.time).toLocaleString()}</td>
                         <td>
-                            <button class="btn btn-warning" onclick="editPayment(${p.id})">Sửa</button>
-                            <button class="btn btn-danger" onclick="deletePayment(${p.id})">Xóa</button>
+                            <button class="btn btn-info btn-sm" onclick="showDetails(${inv.id})">Chi tiết</button>
+                            <button class="btn btn-warning btn-sm" onclick="openInvoiceModal(${inv.id})">Sửa</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteInvoice(${inv.id})">Xóa</button>
                         </td>
                     </tr>`;
             });
         }
 
-        function addPayment() {
-            const table = document.getElementById('paymentTableNumber').value;
-            const amount = document.getElementById('paymentAmount').value;
-            const method = document.getElementById('paymentMethod').value;
-            if (table && amount && method) {
-                const id = payments.length ? payments[payments.length-1].id+1 : 1;
-                payments.push({id, table, amount, method}); renderPayments();
-                $('#addPaymentModal').modal('hide'); document.getElementById('addPaymentForm').reset();
-            } else alert('Vui lòng điền đầy đủ thông tin!');
+        function openInvoiceModal(id) {
+            document.getElementById('invoiceForm').reset();
+            document.getElementById('invoiceId').value = id || '';
+            if (id) {
+                const inv = invoices.find(x=>x.id===id);
+                document.getElementById('invoiceCustomer').value = inv.customer;
+                document.getElementById('invoiceBranch').value = inv.branch;
+                document.getElementById('invoiceTime').value = inv.time;
+            }
+            $('#invoiceModal').modal('show');
         }
 
-        function editPayment(id) {
-            const p=payments.find(x=>x.id===id);
-            document.getElementById('editPaymentId').value=p.id;
-            document.getElementById('editPaymentTableNumber').value=p.table;
-            document.getElementById('editPaymentAmount').value=p.amount;
-            document.getElementById('editPaymentMethod').value=p.method;
-            $('#editPaymentModal').modal('show');
+        function saveInvoice() {
+            const idField = document.getElementById('invoiceId').value;
+            const cust = document.getElementById('invoiceCustomer').value;
+            const br = document.getElementById('invoiceBranch').value;
+            const time = document.getElementById('invoiceTime').value;
+            if (!cust||!br||!time) return alert('Nhập đủ thông tin');
+            if (idField) {
+                const inv = invoices.find(x=>x.id==idField);
+                inv.customer=cust; inv.branch=br; inv.time=time;
+            } else {
+                const newId = invoices.length?invoices[invoices.length-1].id+1:1;
+                invoices.push({id:newId, customer:cust, branch:br, time});
+            }
+            renderInvoices(); $('#invoiceModal').modal('hide');
+            if (currentInvoice) showDetails(currentInvoice);
         }
 
-        function savePaymentEdit() {
-            const id=+document.getElementById('editPaymentId').value;
-            const table=document.getElementById('editPaymentTableNumber').value;
-            const amount=document.getElementById('editPaymentAmount').value;
-            const method=document.getElementById('editPaymentMethod').value;
-            if (table && amount && method) {
-                const p=payments.find(x=>x.id===id);
-                p.table=table; p.amount=amount; p.method=method;
-                renderPayments(); $('#editPaymentModal').modal('hide');
-            } else alert('Vui lòng điền đầy đủ thông tin!');
+        function deleteInvoice(id) {
+            if (!confirm('Xóa hoá đơn?')) return;
+            invoices = invoices.filter(x=>x.id!==id);
+            invoiceDetails = invoiceDetails.filter(d=>d.invoiceId!==id);
+            renderInvoices();
+            if (currentInvoice===id) { document.getElementById('detailSection').style.display='none'; }
         }
 
-        function deletePayment(id) {
-            if (confirm('Bạn có chắc muốn xóa?')) { payments=payments.filter(x=>x.id!==id); renderPayments(); }
+        function showDetails(invoiceId) {
+            currentInvoice = invoiceId;
+            document.getElementById('detailSection').style.display='block';
+            document.getElementById('currentInvoiceId').textContent = invoiceId;
+            renderDetails();
         }
 
-        renderPayments();
+        function renderDetails() {
+            const tbody = document.getElementById('detailTable'); tbody.innerHTML='';
+            invoiceDetails.filter(d=>d.invoiceId===currentInvoice)
+                .forEach(d=>{
+                    const total = d.quantity*d.unitPrice;
+                    tbody.innerHTML += `
+                    <tr>
+                        <td>${d.dishId}</td>
+                        <td>${d.quantity}</td>
+                        <td>${d.unitPrice}</td>
+                        <td>${total}</td>
+                        <td>${d.note}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="openDetailModal(${d.id})">Sửa</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteDetail(${d.id})">Xóa</button>
+                        </td>
+                    </tr>`;
+                });
+        }
+
+        function openDetailModal(id) {
+            document.getElementById('detailForm').reset();
+            document.getElementById('detailId').value = id || '';
+            if (!currentInvoice) return alert('Chọn hoá đơn trước');
+            if (id) {
+                const d = invoiceDetails.find(x=>x.id===id);
+                document.getElementById('detailDishId').value = d.dishId;
+                document.getElementById('detailQuantity').value = d.quantity;
+                document.getElementById('detailUnitPrice').value = d.unitPrice;
+                document.getElementById('detailNote').value = d.note;
+            }
+            $('#detailModal').modal('show');
+        }
+
+        function saveDetail() {
+            const idField = document.getElementById('detailId').value;
+            const dishId = document.getElementById('detailDishId').value;
+            const qty = parseFloat(document.getElementById('detailQuantity').value);
+            const price = parseFloat(document.getElementById('detailUnitPrice').value);
+            const note = document.getElementById('detailNote').value;
+            if (!dishId||!qty||!price) return alert('Nhập đủ thông tin');
+            if (idField) {
+                const d = invoiceDetails.find(x=>x.id==idField);
+                d.dishId=dishId; d.quantity=qty; d.unitPrice=price; d.note=note;
+            } else {
+                const newId = invoiceDetails.length?invoiceDetails[invoiceDetails.length-1].id+1:1;
+                invoiceDetails.push({id:newId, invoiceId:currentInvoice, dishId, quantity:qty, unitPrice:price, note});
+            }
+            renderDetails(); $('#detailModal').modal('hide');
+        }
+
+        function deleteDetail(id) {
+            if (!confirm('Xóa chi tiết?')) return;
+            invoiceDetails = invoiceDetails.filter(x=>x.id!==id);
+            renderDetails();
+        }
+
+        // Khởi tạo
+        renderInvoices();
     </script>
 </body>
 </html>

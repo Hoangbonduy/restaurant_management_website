@@ -18,10 +18,11 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Bàn số</th>
-                    <th>Tên món</th>
-                    <th>Số lượng</th>
+                    <th>Mã phiếu đặt</th>
+                    <th>Thời gian đặt</th>
+                    <th>Mã bàn ăn</th>
+                    <th>Mã khách hàng</th>
+                    <th>Ghi chú</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
@@ -29,12 +30,12 @@
         </table>
     </div>
 
-    <!-- Modal thêm gọi món -->
+    <!-- Modal thêm phiếu đặt món -->
     <div class="modal fade" id="addOrderModal" tabindex="-1" role="dialog" aria-labelledby="addOrderModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addOrderModalLabel">Thêm gọi món</h5>
+                    <h5 class="modal-title" id="addOrderModalLabel">Thêm phiếu đặt</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -42,16 +43,20 @@
                 <div class="modal-body">
                     <form id="addOrderForm">
                         <div class="form-group">
-                            <label for="orderTableNumber">Bàn số</label>
-                            <input type="number" class="form-control" id="orderTableNumber" required>
+                            <label for="orderTime">Thời gian đặt</label>
+                            <input type="datetime-local" class="form-control" id="orderTime" required>
                         </div>
                         <div class="form-group">
-                            <label for="orderDishName">Tên món</label>
-                            <input type="text" class="form-control" id="orderDishName" required>
+                            <label for="orderTableCode">Mã bàn ăn</label>
+                            <input type="text" class="form-control" id="orderTableCode" required>
                         </div>
                         <div class="form-group">
-                            <label for="orderQuantity">Số lượng</label>
-                            <input type="number" class="form-control" id="orderQuantity" required>
+                            <label for="orderCustomerCode">Mã khách hàng</label>
+                            <input type="text" class="form-control" id="orderCustomerCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="orderNote">Ghi chú</label>
+                            <textarea class="form-control" id="orderNote" rows="2"></textarea>
                         </div>
                     </form>
                 </div>
@@ -63,12 +68,12 @@
         </div>
     </div>
 
-    <!-- Modal sửa gọi món -->
+    <!-- Modal sửa phiếu đặt -->
     <div class="modal fade" id="editOrderModal" tabindex="-1" role="dialog" aria-labelledby="editOrderModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editOrderModalLabel">Sửa gọi món</h5>
+                    <h5 class="modal-title" id="editOrderModalLabel">Sửa phiếu đặt</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -77,16 +82,20 @@
                     <form id="editOrderForm">
                         <input type="hidden" id="editOrderId">
                         <div class="form-group">
-                            <label for="editOrderTableNumber">Bàn số</label>
-                            <input type="number" class="form-control" id="editOrderTableNumber" required>
+                            <label for="editOrderTime">Thời gian đặt</label>
+                            <input type="datetime-local" class="form-control" id="editOrderTime" required>
                         </div>
                         <div class="form-group">
-                            <label for="editOrderDishName">Tên món</label>
-                            <input type="text" class="form-control" id="editOrderDishName" required>
+                            <label for="editOrderTableCode">Mã bàn ăn</label>
+                            <input type="text" class="form-control" id="editOrderTableCode" required>
                         </div>
                         <div class="form-group">
-                            <label for="editOrderQuantity">Số lượng</label>
-                            <input type="number" class="form-control" id="editOrderQuantity" required>
+                            <label for="editOrderCustomerCode">Mã khách hàng</label>
+                            <input type="text" class="form-control" id="editOrderCustomerCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editOrderNote">Ghi chú</label>
+                            <textarea class="form-control" id="editOrderNote" rows="2"></textarea>
                         </div>
                     </form>
                 </div>
@@ -105,14 +114,16 @@
         let orders = [];
 
         function renderOrders() {
-            const tbody = document.getElementById('orderTable'); tbody.innerHTML='';
+            const tbody = document.getElementById('orderTable');
+            tbody.innerHTML = '';
             orders.forEach(o => {
                 tbody.innerHTML += `
                     <tr>
                         <td>${o.id}</td>
-                        <td>${o.table}</td>
-                        <td>${o.dish}</td>
-                        <td>${o.quantity}</td>
+                        <td>${new Date(o.time).toLocaleString()}</td>
+                        <td>${o.tableCode}</td>
+                        <td>${o.customerCode}</td>
+                        <td>${o.note || ''}</td>
                         <td>
                             <button class="btn btn-warning" onclick="editOrder(${o.id})">Sửa</button>
                             <button class="btn btn-danger" onclick="deleteOrder(${o.id})">Xóa</button>
@@ -122,39 +133,55 @@
         }
 
         function addOrder() {
-            const table = document.getElementById('orderTableNumber').value;
-            const dish = document.getElementById('orderDishName').value;
-            const quantity = document.getElementById('orderQuantity').value;
-            if (table && dish && quantity) {
-                const id = orders.length ? orders[orders.length-1].id+1 : 1;
-                orders.push({id, table, dish, quantity}); renderOrders();
-                $('#addOrderModal').modal('hide'); document.getElementById('addOrderForm').reset();
-            } else alert('Vui lòng điền đầy đủ thông tin!');
+            const time = document.getElementById('orderTime').value;
+            const tableCode = document.getElementById('orderTableCode').value;
+            const customerCode = document.getElementById('orderCustomerCode').value;
+            const note = document.getElementById('orderNote').value;
+            if (time && tableCode && customerCode) {
+                const id = orders.length ? orders[orders.length - 1].id + 1 : 1;
+                orders.push({ id, time, tableCode, customerCode, note });
+                renderOrders();
+                $('#addOrderModal').modal('hide');
+                document.getElementById('addOrderForm').reset();
+            } else {
+                alert('Vui lòng điền đầy đủ thông tin!');
+            }
         }
 
         function editOrder(id) {
-            const o=orders.find(x=>x.id===id);
-            document.getElementById('editOrderId').value=o.id;
-            document.getElementById('editOrderTableNumber').value=o.table;
-            document.getElementById('editOrderDishName').value=o.dish;
-            document.getElementById('editOrderQuantity').value=o.quantity;
+            const o = orders.find(x => x.id === id);
+            document.getElementById('editOrderId').value = o.id;
+            document.getElementById('editOrderTime').value = o.time;
+            document.getElementById('editOrderTableCode').value = o.tableCode;
+            document.getElementById('editOrderCustomerCode').value = o.customerCode;
+            document.getElementById('editOrderNote').value = o.note;
             $('#editOrderModal').modal('show');
         }
 
         function saveOrderEdit() {
-            const id=+document.getElementById('editOrderId').value;
-            const table=document.getElementById('editOrderTableNumber').value;
-            const dish=document.getElementById('editOrderDishName').value;
-            const quantity=document.getElementById('editOrderQuantity').value;
-            if (table && dish && quantity) {
-                const o=orders.find(x=>x.id===id);
-                o.table=table; o.dish=dish; o.quantity=quantity;
-                renderOrders(); $('#editOrderModal').modal('hide');
-            } else alert('Vui lòng điền đầy đủ thông tin!');
+            const id = +document.getElementById('editOrderId').value;
+            const time = document.getElementById('editOrderTime').value;
+            const tableCode = document.getElementById('editOrderTableCode').value;
+            const customerCode = document.getElementById('editOrderCustomerCode').value;
+            const note = document.getElementById('editOrderNote').value;
+            if (time && tableCode && customerCode) {
+                const o = orders.find(x => x.id === id);
+                o.time = time;
+                o.tableCode = tableCode;
+                o.customerCode = customerCode;
+                o.note = note;
+                renderOrders();
+                $('#editOrderModal').modal('hide');
+            } else {
+                alert('Vui lòng điền đầy đủ thông tin!');
+            }
         }
 
         function deleteOrder(id) {
-            if (confirm('Bạn có chắc muốn xóa?')) { orders=orders.filter(x=>x.id!==id); renderOrders(); }
+            if (confirm('Bạn có chắc muốn xóa?')) {
+                orders = orders.filter(x => x.id !== id);
+                renderOrders();
+            }
         }
 
         renderOrders();

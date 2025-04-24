@@ -18,9 +18,10 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>Tên món</th>
-                    <th>Giá</th>
-                    <th>Mô tả</th>
+                    <th>Mã món ăn</th>
+                    <th>Tên món ăn</th>
+                    <th>Ghi chú</th>
+                    <th>Đơn giá</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
@@ -41,16 +42,20 @@
                 <div class="modal-body">
                     <form id="addDishForm">
                         <div class="form-group">
-                            <label for="dishName">Tên món</label>
+                            <label for="dishCode">Mã món ăn</label>
+                            <input type="text" class="form-control" id="dishCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dishName">Tên món ăn</label>
                             <input type="text" class="form-control" id="dishName" required>
                         </div>
                         <div class="form-group">
-                            <label for="dishPrice">Giá</label>
-                            <input type="text" class="form-control" id="dishPrice" required>
+                            <label for="dishNote">Ghi chú</label>
+                            <textarea class="form-control" id="dishNote" required></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="dishDescription">Mô tả</label>
-                            <textarea class="form-control" id="dishDescription" required></textarea>
+                            <label for="dishPrice">Đơn giá</label>
+                            <input type="text" class="form-control" id="dishPrice" required>
                         </div>
                     </form>
                 </div>
@@ -76,16 +81,20 @@
                     <form id="editDishForm">
                         <input type="hidden" id="editDishId">
                         <div class="form-group">
-                            <label for="editDishName">Tên món</label>
+                            <label for="editDishCode">Mã món ăn</label>
+                            <input type="text" class="form-control" id="editDishCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editDishName">Tên món ăn</label>
                             <input type="text" class="form-control" id="editDishName" required>
                         </div>
                         <div class="form-group">
-                            <label for="editDishPrice">Giá</label>
-                            <input type="text" class="form-control" id="editDishPrice" required>
+                            <label for="editDishNote">Ghi chú</label>
+                            <textarea class="form-control" id="editDishNote" required></textarea>
                         </div>
                         <div class="form-group">
-                            <label for="editDishDescription">Mô tả</label>
-                            <textarea class="form-control" id="editDishDescription" required></textarea>
+                            <label for="editDishPrice">Đơn giá</label>
+                            <input type="text" class="form-control" id="editDishPrice" required>
                         </div>
                     </form>
                 </div>
@@ -102,22 +111,22 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         let dishes = [
-            { id: 1, name: 'Phở bò', price: '50,000 VND', description: 'Món phở truyền thống với thịt bò' },
-            { id: 2, name: 'Bún chả', price: '40,000 VND', description: 'Bún với thịt nướng và nước mắm' }
+            { id: 1, code: 'MA001', name: 'Phở bò', note: 'Phở truyền thống', price: '50000' },
+            { id: 2, code: 'MA002', name: 'Bún chả', note: 'Thịt nướng', price: '40000' }
         ];
 
         function renderDishes() {
             const tableBody = document.getElementById('dishTable');
             tableBody.innerHTML = '';
-            dishes.forEach(dish => {
-                const row = `
-                <tr>
-                    <td>${dish.name}</td>
-                    <td>${dish.price}</td>
-                    <td>${dish.description}</td>
+            dishes.forEach(d => {
+                const row = `<tr>
+                    <td>${d.code}</td>
+                    <td>${d.name}</td>
+                    <td>${d.note}</td>
+                    <td>${d.price}</td>
                     <td>
-                        <button class="btn btn-warning" onclick="editDish(${dish.id})">Sửa</button>
-                        <button class="btn btn-danger" onclick="deleteDish(${dish.id})">Xóa</button>
+                        <button class="btn btn-warning" onclick="editDish(${d.id})">Sửa</button>
+                        <button class="btn btn-danger" onclick="deleteDish(${d.id})">Xóa</button>
                     </td>
                 </tr>`;
                 tableBody.innerHTML += row;
@@ -125,12 +134,13 @@
         }
 
         function addDish() {
+            const code = document.getElementById('dishCode').value;
             const name = document.getElementById('dishName').value;
+            const note = document.getElementById('dishNote').value;
             const price = document.getElementById('dishPrice').value;
-            const description = document.getElementById('dishDescription').value;
-            if (name && price && description) {
+            if (code && name && note && price) {
                 const newId = dishes.length ? dishes[dishes.length - 1].id + 1 : 1;
-                dishes.push({ id: newId, name, price, description });
+                dishes.push({ id: newId, code, name, note, price });
                 renderDishes();
                 $('#addDishModal').modal('hide');
                 document.getElementById('addDishForm').reset();
@@ -140,24 +150,27 @@
         }
 
         function editDish(id) {
-            const dish = dishes.find(d => d.id === id);
-            document.getElementById('editDishId').value = dish.id;
-            document.getElementById('editDishName').value = dish.name;
-            document.getElementById('editDishPrice').value = dish.price;
-            document.getElementById('editDishDescription').value = dish.description;
+            const d = dishes.find(d => d.id === id);
+            document.getElementById('editDishId').value = d.id;
+            document.getElementById('editDishCode').value = d.code;
+            document.getElementById('editDishName').value = d.name;
+            document.getElementById('editDishNote').value = d.note;
+            document.getElementById('editDishPrice').value = d.price;
             $('#editDishModal').modal('show');
         }
 
         function saveDishEdit() {
             const id = parseInt(document.getElementById('editDishId').value);
+            const code = document.getElementById('editDishCode').value;
             const name = document.getElementById('editDishName').value;
+            const note = document.getElementById('editDishNote').value;
             const price = document.getElementById('editDishPrice').value;
-            const description = document.getElementById('editDishDescription').value;
-            if (name && price && description) {
-                const dish = dishes.find(d => d.id === id);
-                dish.name = name;
-                dish.price = price;
-                dish.description = description;
+            if (code && name && note && price) {
+                const d = dishes.find(d => d.id === id);
+                d.code = code;
+                d.name = name;
+                d.note = note;
+                d.price = price;
                 renderDishes();
                 $('#editDishModal').modal('hide');
             } else {

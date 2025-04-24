@@ -18,9 +18,11 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
+                    <th>Mã nguyên liệu</th>
+                    <th>Mã nhà cung cấp</th>
                     <th>Tên nguyên liệu</th>
                     <th>Số lượng</th>
-                    <th>Đơn vị</th>
+                    <th>Ghi chú</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
@@ -41,16 +43,24 @@
                 <div class="modal-body">
                     <form id="addIngredientForm">
                         <div class="form-group">
+                            <label for="ingredientCode">Mã nguyên liệu</label>
+                            <input type="text" class="form-control" id="ingredientCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="supplierCode">Mã nhà cung cấp</label>
+                            <input type="text" class="form-control" id="supplierCode" required>
+                        </div>
+                        <div class="form-group">
                             <label for="ingredientName">Tên nguyên liệu</label>
                             <input type="text" class="form-control" id="ingredientName" required>
                         </div>
                         <div class="form-group">
                             <label for="ingredientQuantity">Số lượng</label>
-                            <input type="number" class="form-control" id="ingredientQuantity" required>
+                            <input type="number" step="any" class="form-control" id="ingredientQuantity" required>
                         </div>
                         <div class="form-group">
-                            <label for="ingredientUnit">Đơn vị</label>
-                            <input type="text" class="form-control" id="ingredientUnit" required>
+                            <label for="ingredientNote">Ghi chú</label>
+                            <textarea class="form-control" id="ingredientNote" rows="2"></textarea>
                         </div>
                     </form>
                 </div>
@@ -76,16 +86,24 @@
                     <form id="editIngredientForm">
                         <input type="hidden" id="editIngredientId">
                         <div class="form-group">
+                            <label for="editIngredientCode">Mã nguyên liệu</label>
+                            <input type="text" class="form-control" id="editIngredientCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editSupplierCode">Mã nhà cung cấp</label>
+                            <input type="text" class="form-control" id="editSupplierCode" required>
+                        </div>
+                        <div class="form-group">
                             <label for="editIngredientName">Tên nguyên liệu</label>
                             <input type="text" class="form-control" id="editIngredientName" required>
                         </div>
                         <div class="form-group">
                             <label for="editIngredientQuantity">Số lượng</label>
-                            <input type="number" class="form-control" id="editIngredientQuantity" required>
+                            <input type="number" step="any" class="form-control" id="editIngredientQuantity" required>
                         </div>
                         <div class="form-group">
-                            <label for="editIngredientUnit">Đơn vị</label>
-                            <input type="text" class="form-control" id="editIngredientUnit" required>
+                            <label for="editIngredientNote">Ghi chú</label>
+                            <textarea class="form-control" id="editIngredientNote" rows="2"></textarea>
                         </div>
                     </form>
                 </div>
@@ -102,8 +120,8 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         let ingredients = [
-            { id: 1, name: 'Thịt bò', quantity: 10, unit: 'kg' },
-            { id: 2, name: 'Bún', quantity: 20, unit: 'kg' }
+            { id: 1, code: 'NL001', supplier: 'NCC001', name: 'Thịt bò', quantity: 10, note: 'Nhập từ nhà cung cấp A' },
+            { id: 2, code: 'NL002', supplier: 'NCC002', name: 'Bún', quantity: 20, note: 'Bún tươi' }
         ];
 
         function renderIngredients() {
@@ -112,9 +130,11 @@
             ingredients.forEach(item => {
                 const row = `
                 <tr>
+                    <td>${item.code}</td>
+                    <td>${item.supplier}</td>
                     <td>${item.name}</td>
                     <td>${item.quantity}</td>
-                    <td>${item.unit}</td>
+                    <td>${item.note}</td>
                     <td>
                         <button class="btn btn-warning" onclick="editIngredient(${item.id})">Sửa</button>
                         <button class="btn btn-danger" onclick="deleteIngredient(${item.id})">Xóa</button>
@@ -125,12 +145,14 @@
         }
 
         function addIngredient() {
+            const code = document.getElementById('ingredientCode').value;
+            const supplier = document.getElementById('supplierCode').value;
             const name = document.getElementById('ingredientName').value;
             const quantity = document.getElementById('ingredientQuantity').value;
-            const unit = document.getElementById('ingredientUnit').value;
-            if (name && quantity && unit) {
+            const note = document.getElementById('ingredientNote').value;
+            if (code && supplier && name && quantity) {
                 const newId = ingredients.length ? ingredients[ingredients.length - 1].id + 1 : 1;
-                ingredients.push({ id: newId, name, quantity: parseFloat(quantity), unit });
+                ingredients.push({ id: newId, code, supplier, name, quantity: parseFloat(quantity), note });
                 renderIngredients();
                 $('#addIngredientModal').modal('hide');
                 document.getElementById('addIngredientForm').reset();
@@ -142,22 +164,28 @@
         function editIngredient(id) {
             const item = ingredients.find(i => i.id === id);
             document.getElementById('editIngredientId').value = item.id;
+            document.getElementById('editIngredientCode').value = item.code;
+            document.getElementById('editSupplierCode').value = item.supplier;
             document.getElementById('editIngredientName').value = item.name;
             document.getElementById('editIngredientQuantity').value = item.quantity;
-            document.getElementById('editIngredientUnit').value = item.unit;
+            document.getElementById('editIngredientNote').value = item.note;
             $('#editIngredientModal').modal('show');
         }
 
         function saveIngredientEdit() {
             const id = parseInt(document.getElementById('editIngredientId').value);
+            const code = document.getElementById('editIngredientCode').value;
+            const supplier = document.getElementById('editSupplierCode').value;
             const name = document.getElementById('editIngredientName').value;
             const quantity = document.getElementById('editIngredientQuantity').value;
-            const unit = document.getElementById('editIngredientUnit').value;
-            if (name && quantity && unit) {
+            const note = document.getElementById('editIngredientNote').value;
+            if (code && supplier && name && quantity) {
                 const item = ingredients.find(i => i.id === id);
+                item.code = code;
+                item.supplier = supplier;
                 item.name = name;
                 item.quantity = parseFloat(quantity);
-                item.unit = unit;
+                item.note = note;
                 renderIngredients();
                 $('#editIngredientModal').modal('hide');
             } else {

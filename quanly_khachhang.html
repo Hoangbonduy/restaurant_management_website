@@ -21,9 +21,10 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
+                    <th>Mã khách hàng</th>
                     <th>Tên khách hàng</th>
+                    <th>Ngày sinh</th>
                     <th>Số điện thoại</th>
-                    <th>Email</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
@@ -44,16 +45,20 @@
                 <div class="modal-body">
                     <form id="addCustomerForm">
                         <div class="form-group">
+                            <label for="customerCode">Mã khách hàng</label>
+                            <input type="text" class="form-control" id="customerCode" required>
+                        </div>
+                        <div class="form-group">
                             <label for="customerName">Tên khách hàng</label>
                             <input type="text" class="form-control" id="customerName" required>
                         </div>
                         <div class="form-group">
-                            <label for="customerPhone">Số điện thoại</label>
-                            <input type="text" class="form-control" id="customerPhone" required>
+                            <label for="customerDob">Ngày sinh</label>
+                            <input type="date" class="form-control" id="customerDob" required>
                         </div>
                         <div class="form-group">
-                            <label for="customerEmail">Email</label>
-                            <input type="email" class="form-control" id="customerEmail" required>
+                            <label for="customerPhone">Số điện thoại</label>
+                            <input type="text" class="form-control" id="customerPhone" required>
                         </div>
                     </form>
                 </div>
@@ -79,16 +84,20 @@
                     <form id="editCustomerForm">
                         <input type="hidden" id="editCustomerId">
                         <div class="form-group">
+                            <label for="editCustomerCode">Mã khách hàng</label>
+                            <input type="text" class="form-control" id="editCustomerCode" required>
+                        </div>
+                        <div class="form-group">
                             <label for="editCustomerName">Tên khách hàng</label>
                             <input type="text" class="form-control" id="editCustomerName" required>
                         </div>
                         <div class="form-group">
-                            <label for="editCustomerPhone">Số điện thoại</label>
-                            <input type="text" class="form-control" id="editCustomerPhone" required>
+                            <label for="editCustomerDob">Ngày sinh</label>
+                            <input type="date" class="form-control" id="editCustomerDob" required>
                         </div>
                         <div class="form-group">
-                            <label for="editCustomerEmail">Email</label>
-                            <input type="email" class="form-control" id="editCustomerEmail" required>
+                            <label for="editCustomerPhone">Số điện thoại</label>
+                            <input type="text" class="form-control" id="editCustomerPhone" required>
                         </div>
                     </form>
                 </div>
@@ -106,23 +115,24 @@
     <script>
         // Mảng quản lý khách hàng
         let customers = [
-            { id: 1, name: 'Nguyễn Thị C', phone: '0123456789', email: 'nguyenthic@example.com' },
-            { id: 2, name: 'Lê Văn D', phone: '0987654321', email: 'levand@example.com' }
+            { id: 1, code: 'KH001', name: 'Nguyễn Thị C', dob: '1985-06-15', phone: '0123456789' },
+            { id: 2, code: 'KH002', name: 'Lê Văn D', dob: '1990-12-20', phone: '0987654321' }
         ];
 
         // Hàm render danh sách khách hàng
         function renderCustomers() {
             const tableBody = document.getElementById('customerTable');
             tableBody.innerHTML = '';
-            customers.forEach(customer => {
+            customers.forEach(c => {
                 const row = `
                 <tr>
-                    <td>${customer.name}</td>
-                    <td>${customer.phone}</td>
-                    <td>${customer.email}</td>
+                    <td>${c.code}</td>
+                    <td>${c.name}</td>
+                    <td>${c.dob}</td>
+                    <td>${c.phone}</td>
                     <td>
-                        <button class="btn btn-warning" onclick="editCustomer(${customer.id})">Sửa</button>
-                        <button class="btn btn-danger" onclick="deleteCustomer(${customer.id})">Xóa</button>
+                        <button class="btn btn-warning" onclick="editCustomer(${c.id})">Sửa</button>
+                        <button class="btn btn-danger" onclick="deleteCustomer(${c.id})">Xóa</button>
                     </td>
                 </tr>`;
                 tableBody.innerHTML += row;
@@ -131,12 +141,13 @@
 
         // Thêm khách hàng
         function addCustomer() {
+            const code = document.getElementById('customerCode').value;
             const name = document.getElementById('customerName').value;
+            const dob = document.getElementById('customerDob').value;
             const phone = document.getElementById('customerPhone').value;
-            const email = document.getElementById('customerEmail').value;
-            if (name && phone && email) {
+            if (code && name && dob && phone) {
                 const newId = customers.length ? customers[customers.length - 1].id + 1 : 1;
-                customers.push({ id: newId, name, phone, email });
+                customers.push({ id: newId, code, name, dob, phone });
                 renderCustomers();
                 $('#addCustomerModal').modal('hide');
                 document.getElementById('addCustomerForm').reset();
@@ -147,25 +158,28 @@
 
         // Chỉnh sửa khách hàng
         function editCustomer(id) {
-            const customer = customers.find(c => c.id === id);
-            document.getElementById('editCustomerId').value = customer.id;
-            document.getElementById('editCustomerName').value = customer.name;
-            document.getElementById('editCustomerPhone').value = customer.phone;
-            document.getElementById('editCustomerEmail').value = customer.email;
+            const c = customers.find(c => c.id === id);
+            document.getElementById('editCustomerId').value = c.id;
+            document.getElementById('editCustomerCode').value = c.code;
+            document.getElementById('editCustomerName').value = c.name;
+            document.getElementById('editCustomerDob').value = c.dob;
+            document.getElementById('editCustomerPhone').value = c.phone;
             $('#editCustomerModal').modal('show');
         }
 
         // Lưu chỉnh sửa
         function saveCustomerEdit() {
             const id = parseInt(document.getElementById('editCustomerId').value);
+            const code = document.getElementById('editCustomerCode').value;
             const name = document.getElementById('editCustomerName').value;
+            const dob = document.getElementById('editCustomerDob').value;
             const phone = document.getElementById('editCustomerPhone').value;
-            const email = document.getElementById('editCustomerEmail').value;
-            if (name && phone && email) {
-                const customer = customers.find(c => c.id === id);
-                customer.name = name;
-                customer.phone = phone;
-                customer.email = email;
+            if (code && name && dob && phone) {
+                const c = customers.find(c => c.id === id);
+                c.code = code;
+                c.name = name;
+                c.dob = dob;
+                c.phone = phone;
                 renderCustomers();
                 $('#editCustomerModal').modal('hide');
             } else {

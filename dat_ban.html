@@ -18,10 +18,9 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>Bàn số</th>
-                    <th>Tên khách</th>
-                    <th>Điện thoại</th>
-                    <th>Thời gian</th>
+                    <th>Mã bàn ăn</th>
+                    <th>Mã chi nhánh</th>
+                    <th>Tình trạng bàn</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
@@ -42,20 +41,20 @@
                 <div class="modal-body">
                     <form id="addBookingForm">
                         <div class="form-group">
-                            <label for="tableNumber">Bàn số</label>
-                            <input type="number" class="form-control" id="tableNumber" required>
+                            <label for="bookingCode">Mã bàn ăn</label>
+                            <input type="text" class="form-control" id="bookingCode" required>
                         </div>
                         <div class="form-group">
-                            <label for="customerName">Tên khách</label>
-                            <input type="text" class="form-control" id="customerName" required>
+                            <label for="branchCode">Mã chi nhánh</label>
+                            <input type="text" class="form-control" id="branchCode" required>
                         </div>
                         <div class="form-group">
-                            <label for="customerPhone">Điện thoại</label>
-                            <input type="text" class="form-control" id="customerPhone" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="bookingTime">Thời gian</label>
-                            <input type="datetime-local" class="form-control" id="bookingTime" required>
+                            <label for="tableStatus">Tình trạng bàn</label>
+                            <select class="form-control" id="tableStatus" required>
+                                <option value="Trống">Trống</option>
+                                <option value="Đã đặt">Đã đặt</option>
+                                <option value="Đang phục vụ">Đang phục vụ</option>
+                            </select>
                         </div>
                     </form>
                 </div>
@@ -81,20 +80,20 @@
                     <form id="editBookingForm">
                         <input type="hidden" id="editBookingId">
                         <div class="form-group">
-                            <label for="editTableNumber">Bàn số</label>
-                            <input type="number" class="form-control" id="editTableNumber" required>
+                            <label for="editBookingCode">Mã bàn ăn</label>
+                            <input type="text" class="form-control" id="editBookingCode" required>
                         </div>
                         <div class="form-group">
-                            <label for="editCustomerName">Tên khách</label>
-                            <input type="text" class="form-control" id="editCustomerName" required>
+                            <label for="editBranchCode">Mã chi nhánh</label>
+                            <input type="text" class="form-control" id="editBranchCode" required>
                         </div>
                         <div class="form-group">
-                            <label for="editCustomerPhone">Điện thoại</label>
-                            <input type="text" class="form-control" id="editCustomerPhone" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editBookingTime">Thời gian</label>
-                            <input type="datetime-local" class="form-control" id="editBookingTime" required>
+                            <label for="editTableStatus">Tình trạng bàn</label>
+                            <select class="form-control" id="editTableStatus" required>
+                                <option value="Trống">Trống</option>
+                                <option value="Đã đặt">Đã đặt</option>
+                                <option value="Đang phục vụ">Đang phục vụ</option>
+                            </select>
                         </div>
                     </form>
                 </div>
@@ -110,67 +109,72 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        let bookings = [];
+        let bookings = [
+            { id: 1, code: 'B001', branch: 'CN01', status: 'Trống' },
+            { id: 2, code: 'B002', branch: 'CN02', status: 'Đã đặt' }
+        ];
 
         function renderBookings() {
             const tbody = document.getElementById('bookingTable');
             tbody.innerHTML = '';
             bookings.forEach(b => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${b.table}</td>
-                        <td>${b.name}</td>
-                        <td>${b.phone}</td>
-                        <td>${new Date(b.time).toLocaleString()}</td>
-                        <td>
-                            <button class="btn btn-warning" onclick="editBooking(${b.id})">Sửa</button>
-                            <button class="btn btn-danger" onclick="deleteBooking(${b.id})">Xóa</button>
-                        </td>
-                    </tr>`;
+                const row = `<tr>
+                    <td>${b.code}</td>
+                    <td>${b.branch}</td>
+                    <td>${b.status}</td>
+                    <td>
+                        <button class="btn btn-warning" onclick="editBooking(${b.id})">Sửa</button>
+                        <button class="btn btn-danger" onclick="deleteBooking(${b.id})">Xóa</button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row;
             });
         }
 
         function addBooking() {
-            const table = document.getElementById('tableNumber').value;
-            const name = document.getElementById('customerName').value;
-            const phone = document.getElementById('customerPhone').value;
-            const time = document.getElementById('bookingTime').value;
-            if (table && name && phone && time) {
-                const id = bookings.length ? bookings[bookings.length-1].id+1 : 1;
-                bookings.push({id, table, name, phone, time});
+            const code = document.getElementById('bookingCode').value;
+            const branch = document.getElementById('branchCode').value;
+            const status = document.getElementById('tableStatus').value;
+            if (code && branch && status) {
+                const id = bookings.length ? bookings[bookings.length - 1].id + 1 : 1;
+                bookings.push({ id, code, branch, status });
                 renderBookings();
                 $('#addBookingModal').modal('hide');
                 document.getElementById('addBookingForm').reset();
-            } else alert('Vui lòng điền đầy đủ thông tin!');
+            } else {
+                alert('Vui lòng nhập đầy đủ thông tin!');
+            }
         }
 
         function editBooking(id) {
-            const b = bookings.find(x=>x.id===id);
+            const b = bookings.find(x => x.id === id);
             document.getElementById('editBookingId').value = b.id;
-            document.getElementById('editTableNumber').value = b.table;
-            document.getElementById('editCustomerName').value = b.name;
-            document.getElementById('editCustomerPhone').value = b.phone;
-            document.getElementById('editBookingTime').value = b.time;
+            document.getElementById('editBookingCode').value = b.code;
+            document.getElementById('editBranchCode').value = b.branch;
+            document.getElementById('editTableStatus').value = b.status;
             $('#editBookingModal').modal('show');
         }
 
         function saveBookingEdit() {
             const id = +document.getElementById('editBookingId').value;
-            const table = document.getElementById('editTableNumber').value;
-            const name = document.getElementById('editCustomerName').value;
-            const phone = document.getElementById('editCustomerPhone').value;
-            const time = document.getElementById('editBookingTime').value;
-            if (table && name && phone && time) {
-                const b = bookings.find(x=>x.id===id);
-                b.table=table; b.name=name; b.phone=phone; b.time=time;
+            const code = document.getElementById('editBookingCode').value;
+            const branch = document.getElementById('editBranchCode').value;
+            const status = document.getElementById('editTableStatus').value;
+            if (code && branch && status) {
+                const b = bookings.find(x => x.id === id);
+                b.code = code;
+                b.branch = branch;
+                b.status = status;
                 renderBookings();
                 $('#editBookingModal').modal('hide');
-            } else alert('Vui lòng điền đầy đủ thông tin!');
+            } else {
+                alert('Vui lòng nhập đầy đủ thông tin!');
+            }
         }
 
         function deleteBooking(id) {
             if (confirm('Bạn có chắc muốn xóa?')) {
-                bookings = bookings.filter(x=>x.id!==id);
+                bookings = bookings.filter(x => x.id !== id);
                 renderBookings();
             }
         }
