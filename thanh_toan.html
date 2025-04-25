@@ -23,6 +23,8 @@
                     <th>Khách hàng</th>
                     <th>Chi nhánh</th>
                     <th>Thời gian tạo</th>
+                    <th>Ưu đãi (VNĐ)</th>
+                    <th>Tổng thanh toán (VNĐ)</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
@@ -70,6 +72,10 @@
                         <div class="form-group">
                             <label for="invoiceTime">Thời gian tạo</label>
                             <input type="datetime-local" class="form-control" id="invoiceTime" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="invoiceDiscount">Ưu đãi (VNĐ)</label>
+                            <input type="number" class="form-control" id="invoiceDiscount" value="0" min="0">
                         </div>
                     </form>
                 </div>
@@ -122,19 +128,32 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        let invoices = [];
-        let invoiceDetails = [];
+        // Dữ liệu mẫu
+        let invoices = [
+            { id: 1, customer: 'Nguyễn Thị C', branch: 'CN1', time: '2025-04-25T10:30', discount: 10000 }
+        ];
+        let invoiceDetails = [
+            { id: 1, invoiceId: 1, dishId: 'M01', quantity: 2, unitPrice: 50000, note: 'Món ngon'}
+        ];
         let currentInvoice = null;
 
         function renderInvoices() {
             const tbody = document.getElementById('invoiceTable'); tbody.innerHTML='';
             invoices.forEach(inv => {
+                // Tính tổng trước ưu đãi
+                const details = invoiceDetails.filter(d => d.invoiceId === inv.id);
+                const totalBefore = details.reduce((sum, d) => sum + d.quantity * d.unitPrice, 0);
+                // Tính tổng sau ưu đãi
+                let totalPay = totalBefore - inv.discount;
+                if (totalPay < 0) totalPay = 0;
                 tbody.innerHTML += `
                     <tr>
                         <td>${inv.id}</td>
                         <td>${inv.customer}</td>
                         <td>${inv.branch}</td>
                         <td>${new Date(inv.time).toLocaleString()}</td>
+                        <td>${inv.discount.toLocaleString()}</td>
+                        <td>${totalPay.toLocaleString()}</td>
                         <td>
                             <button class="btn btn-info btn-sm" onclick="showDetails(${inv.id})">Chi tiết</button>
                             <button class="btn btn-warning btn-sm" onclick="openInvoiceModal(${inv.id})">Sửa</button>
@@ -147,11 +166,13 @@
         function openInvoiceModal(id) {
             document.getElementById('invoiceForm').reset();
             document.getElementById('invoiceId').value = id || '';
+            document.getElementById('invoiceDiscount').value = 0;
             if (id) {
                 const inv = invoices.find(x=>x.id===id);
                 document.getElementById('invoiceCustomer').value = inv.customer;
                 document.getElementById('invoiceBranch').value = inv.branch;
                 document.getElementById('invoiceTime').value = inv.time;
+                document.getElementById('invoiceDiscount').value = inv.discount;
             }
             $('#invoiceModal').modal('show');
         }
@@ -161,13 +182,14 @@
             const cust = document.getElementById('invoiceCustomer').value;
             const br = document.getElementById('invoiceBranch').value;
             const time = document.getElementById('invoiceTime').value;
+            const discount = parseFloat(document.getElementById('invoiceDiscount').value) || 0;
             if (!cust||!br||!time) return alert('Nhập đủ thông tin');
             if (idField) {
                 const inv = invoices.find(x=>x.id==idField);
-                inv.customer=cust; inv.branch=br; inv.time=time;
+                inv.customer=cust; inv.branch=br; inv.time=time; inv.discount=discount;
             } else {
                 const newId = invoices.length?invoices[invoices.length-1].id+1:1;
-                invoices.push({id:newId, customer:cust, branch:br, time});
+                invoices.push({id:newId, customer:cust, branch:br, time, discount});
             }
             renderInvoices(); $('#invoiceModal').modal('hide');
             if (currentInvoice) showDetails(currentInvoice);
@@ -197,8 +219,8 @@
                     <tr>
                         <td>${d.dishId}</td>
                         <td>${d.quantity}</td>
-                        <td>${d.unitPrice}</td>
-                        <td>${total}</td>
+                        <td>${d.unitPrice.toLocaleString()}</td>
+                        <td>${total.toLocaleString()}</td>
                         <td>${d.note}</td>
                         <td>
                             <button class="btn btn-warning btn-sm" onclick="openDetailModal(${d.id})">Sửa</button>
