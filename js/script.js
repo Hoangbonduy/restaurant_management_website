@@ -76,7 +76,8 @@ window.addEventListener('DOMContentLoaded', () => {
     requestOtpForm.addEventListener('submit', (e) => {
         e.preventDefault();
         // Phải dùng username để tìm tài khoản, không phải SĐT
-        const username = document.getElementById('forgot-username').value; 
+        const usernameInput = document.getElementById('login-username');
+        const username = usernameInput.value;
         const users = JSON.parse(localStorage.getItem('users')) || [];
         const userExists = users.find(u => u.username === username);
 
