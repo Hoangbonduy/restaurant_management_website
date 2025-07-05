@@ -127,3 +127,64 @@ body {
     background: #6A3C8D;
     box-shadow: 0 4px 6px rgba(52, 152, 219, 0.2);
   }
+
+  .form-extra {
+    text-align: left;       /* Căn lề trái cho link, giống trong hình mẫu */
+    margin-top: -1rem;      /* Kéo lên một chút để gần ô mật khẩu hơn */
+    margin-bottom: 1.5rem;  /* Tạo khoảng cách với nút Login bên dưới, bằng với các form-group khác */
+  }
+
+  /* Định dạng cho chính link "Quên mật khẩu?" */
+  .forgot-password {
+    font-size: 0.9rem;      /* Cỡ chữ tương đồng với label */
+    color: #007bff;        /* Màu xanh dương tiêu chuẩn cho link, dễ nhận biết */
+    text-decoration: none;  /* Bỏ gạch chân mặc định */
+    font-weight: 500;
+  } 
+
+  .forgot-password:hover {
+    text-decoration: underline; /* Thêm lại gạch chân khi người dùng di chuột qua */
+  }
+
+    /* === BỔ SUNG CSS CHO PHẦN "QUÊN MẬT KHẨU" === */
+  .form-extra {
+    text-align: left;
+    margin-top: -1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .forgot-password {
+    font-size: 0.9rem;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .forgot-password:hover {
+    text-decoration: underline;
+  }
+
+  /* Style cho các đoạn văn bản hướng dẫn */
+  .form-instruction {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  /* Style cho link "Quay lại Đăng nhập" */
+  .back-to-login {
+    display: block;
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .back-to-login:hover {
+    color: #6A3C8D;
+    text-decoration: underline;
+  }
