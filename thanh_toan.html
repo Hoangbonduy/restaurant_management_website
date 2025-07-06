@@ -3,122 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Hoá đơn</title>
+    <title>Tạo Hóa Đơn Thanh Toán</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
-        body { padding: 20px; }
-        .btn { margin: 5px; }
-        #detailSection { margin-top: 40px; }
+        body { padding: 20px; background-color: #f8f9fa; }
+        .list-group-item-action { cursor: pointer; }
+        .payment-section { display: none; }
+        .receipt, .bank-transfer-info { font-family: 'Courier New', Courier, monospace; border: 1px dashed #333; padding: 20px; }
+        .receipt-header, .bank-transfer-header { text-align: center; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Danh mục Hoá đơn</h2>
-        <a href="dashboard.html" class="btn btn-secondary">Quay lại Dashboard</a>
-        <button class="btn btn-success" data-toggle="modal" data-target="#invoiceModal" onclick="openInvoiceModal()">Thêm hoá đơn</button>
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Mã hoá đơn</th>
-                    <th>Khách hàng</th>
-                    <th>Chi nhánh</th>
-                    <th>Thời gian tạo</th>
-                    <th>Ưu đãi (VNĐ)</th>
-                    <th>Tổng thanh toán (VNĐ)</th>
-                    <th>Hành động</th>
-                </tr>
-            </thead>
-            <tbody id="invoiceTable"></tbody>
-        </table>
-
-        <div id="detailSection" style="display:none;">
-            <h3>Chi tiết hoá đơn: <span id="currentInvoiceId"></span></h3>
-            <button class="btn btn-success" data-toggle="modal" data-target="#detailModal" onclick="openDetailModal()">Thêm chi tiết</button>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Mã món ăn</th>
-                        <th>Số lượng</th>
-                        <th>Đơn giá</th>
-                        <th>Thành tiền</th>
-                        <th>Ghi chú</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody id="detailTable"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Modal Invoice Add/Edit -->
-    <div class="modal fade" id="invoiceModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="invoiceModalLabel">Thêm/Sửa hoá đơn</h5>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+    <div class="container-fluid">
+        <!-- Phần tiêu đề và nút quay lại (không đổi) -->
+        <h2 class="mb-4">Tạo Hóa Đơn Thanh Toán</h2>
+        <a href="dashboard.html" class="btn btn-secondary mb-3"><i class="fas fa-arrow-left"></i> Quay lại Dashboard</a>
+        
+        <div class="row">
+            <!-- Cột chọn bàn (không đổi) -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header"><strong>Chọn bàn cần thanh toán</strong></div>
+                    <div class="list-group list-group-flush" id="table-list-for-payment"></div>
                 </div>
-                <div class="modal-body">
-                    <form id="invoiceForm">
-                        <input type="hidden" id="invoiceId">
-                        <div class="form-group">
-                            <label for="invoiceCustomer">Khách hàng</label>
-                            <input type="text" class="form-control" id="invoiceCustomer" required>
+            </div>
+
+            <!-- Cột chi tiết thanh toán (không đổi) -->
+            <div class="col-md-8">
+                <div class="payment-section" id="payment-section">
+                    <div class="card">
+                        <div class="card-header"><h5 id="payment-details-title">Chi tiết thanh toán</h5></div>
+                        <div class="card-body">
+                            <h6>Các món đã gọi:</h6>
+                            <table class="table table-sm">
+                                <thead><tr><th>Tên món</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+                                <tbody id="invoice-items-table"></tbody>
+                            </table>
+                            <hr>
+                            <div class="text-right">
+                                <p><strong>Tổng cộng: </strong><span id="subtotal">0</span> VNĐ</p>
+                                <p><strong>Giảm giá: </strong><span id="discount" class="text-success">0</span> VNĐ</p>
+                                <h4><strong>Thành tiền: </strong><span id="final-total" class="text-danger">0</span> VNĐ</h4>
+                            </div>
+                            <hr>
+                            <h6>Chọn hình thức thanh toán:</h6>
+                            <div class="form-group">
+                                <div class="form-check"><input class="form-check-input" type="radio" name="paymentMethod" id="cash" value="cash" checked><label class="form-check-label" for="cash">Tiền mặt</label></div>
+                                <div class="form-check"><input class="form-check-input" type="radio" name="paymentMethod" id="card" value="card"><label class="form-check-label" for="card">Thẻ ngân hàng (POS)</label></div>
+                                <div class="form-check"><input class="form-check-input" type="radio" name="paymentMethod" id="transfer" value="transfer"><label class="form-check-label" for="transfer">Chuyển khoản (QR Code)</label></div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="invoiceBranch">Chi nhánh</label>
-                            <input type="text" class="form-control" id="invoiceBranch" required>
+                        <div class="card-footer text-right">
+                            <button class="btn btn-secondary" onclick="cancelPayment()">Hủy</button>
+                            <button class="btn btn-primary" onclick="processPayment()">Thanh toán</button>
                         </div>
-                        <div class="form-group">
-                            <label for="invoiceTime">Thời gian tạo</label>
-                            <input type="datetime-local" class="form-control" id="invoiceTime" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="invoiceDiscount">Ưu đãi (VNĐ)</label>
-                            <input type="number" class="form-control" id="invoiceDiscount" value="0" min="0">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                    <button class="btn btn-primary" onclick="saveInvoice()">Lưu</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Detail Add/Edit -->
-    <div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Modal hiển thị hóa đơn (không đổi) -->
+    <div class="modal fade" id="invoice-receipt-modal" tabindex="-1">
+        <div class="modal-dialog modal-sm"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Hóa đơn thanh toán</h5><button type="button" class="close" data-dismiss="modal">×</button></div><div class="modal-body"><div id="receipt-content" class="receipt"></div></div><div class="modal-footer"><button class="btn btn-light" onclick="window.print()">In hóa đơn</button><button class="btn btn-primary" data-dismiss="modal">Đóng</button></div></div></div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- THÊM MỚI: Modal cho việc thanh toán qua ngân hàng -->
+    <!-- ========================================================== -->
+    <div class="modal fade" id="bank-transfer-modal" tabindex="-1" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="detailModalLabel">Thêm/Sửa chi tiết</h5>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title">Thanh toán qua Ngân hàng</h5>
                 </div>
-                <div class="modal-body">
-                    <form id="detailForm">
-                        <input type="hidden" id="detailId">
-                        <div class="form-group">
-                            <label for="detailDishId">Mã món ăn</label>
-                            <input type="text" class="form-control" id="detailDishId" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="detailQuantity">Số lượng</label>
-                            <input type="number" class="form-control" id="detailQuantity" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="detailUnitPrice">Đơn giá</label>
-                            <input type="number" class="form-control" id="detailUnitPrice" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="detailNote">Ghi chú</label>
-                            <textarea class="form-control" id="detailNote" rows="2"></textarea>
-                        </div>
-                    </form>
+                <div class="modal-body text-center">
+                    <p>Vui lòng quét mã QR để thanh toán</p>
+                    <!-- Sử dụng API công cộng để tạo mã QR động -->
+                    <img id="qr-code-img" src="" alt="QR Code" width="250" height="250">
+                    <div class="bank-transfer-info mt-3">
+                        <p><strong>Ngân hàng:</strong> Vietcombank</p>
+                        <p><strong>Số tài khoản:</strong> 999988887777</p>
+                        <p><strong>Chủ tài khoản:</strong> NGUYEN VAN A</p>
+                        <hr>
+                        <p><strong>Số tiền:</strong> <span id="payment-amount" class="font-weight-bold"></span> VNĐ</p>
+                        <p><strong>Nội dung:</strong> <span id="payment-content" class="font-weight-bold"></span></p>
+                    </div>
+                    <div class="mt-4">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span id="payment-status-text"> Đang chờ xác nhận thanh toán...</span>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                    <button class="btn btn-primary" onclick="saveDetail()">Lưu</button>
+                    <!-- NGOẠI LỆ: Người dùng nhấn Hủy -->
+                    <button type="button" class="btn btn-secondary" onclick="cancelBankTransfer()">Hủy giao dịch</button>
                 </div>
             </div>
         </div>
@@ -127,148 +106,212 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
     <script>
-        // Dữ liệu mẫu
-        let invoices = [
-            { id: 1, customer: 'Nguyễn Thị C', branch: 'CN1', time: '2025-04-25T10:30', discount: 10000 }
-        ];
-        let invoiceDetails = [
-            { id: 1, invoiceId: 1, dishId: 'M01', quantity: 2, unitPrice: 50000, note: 'Món ngon'}
-        ];
-        let currentInvoice = null;
+    // --- Dữ liệu và biến (không đổi) ---
+    const mockDishes = [
+        { id: 'M01', name: 'Phở Bò', price: 50000 }, { id: 'M02', name: 'Bún Chả', price: 45000 },
+        { id: 'M03', name: 'Cơm Rang', price: 55000 }, { id: 'M05', name: 'Nước ngọt', price: 15000 },
+    ];
+    let activeOrders = [
+        { orderId: 1, tableId: 'B02', items: [{ dishId: 'M01', quantity: 2 }, { dishId: 'M05', quantity: 4 }], discount: 10000 },
+        { orderId: 2, tableId: 'B03', items: [{ dishId: 'M02', quantity: 1 }, { dishId: 'M03', quantity: 1 }], discount: 0 },
+    ];
+    let paidInvoices = [];
+    let currentOrderIdForPayment = null;
+    let bankPaymentTimeout; // Biến để quản lý timeout
 
-        function renderInvoices() {
-            const tbody = document.getElementById('invoiceTable'); tbody.innerHTML='';
-            invoices.forEach(inv => {
-                // Tính tổng trước ưu đãi
-                const details = invoiceDetails.filter(d => d.invoiceId === inv.id);
-                const totalBefore = details.reduce((sum, d) => sum + d.quantity * d.unitPrice, 0);
-                // Tính tổng sau ưu đãi
-                let totalPay = totalBefore - inv.discount;
-                if (totalPay < 0) totalPay = 0;
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${inv.id}</td>
-                        <td>${inv.customer}</td>
-                        <td>${inv.branch}</td>
-                        <td>${new Date(inv.time).toLocaleString()}</td>
-                        <td>${inv.discount.toLocaleString()}</td>
-                        <td>${totalPay.toLocaleString()}</td>
-                        <td>
-                            <button class="btn btn-info btn-sm" onclick="showDetails(${inv.id})">Chi tiết</button>
-                            <button class="btn btn-warning btn-sm" onclick="openInvoiceModal(${inv.id})">Sửa</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteInvoice(${inv.id})">Xóa</button>
-                        </td>
-                    </tr>`;
-            });
+    // --- Các hàm render, chọn bàn, hủy (không đổi) ---
+    function renderTablesForPayment() {
+        const listGroup = document.getElementById('table-list-for-payment');
+        listGroup.innerHTML = '';
+        if (activeOrders.length === 0) {
+            listGroup.innerHTML = '<div class="list-group-item">Không có bàn nào cần thanh toán.</div>';
+            return;
         }
+        activeOrders.forEach(order => {
+            listGroup.innerHTML += `
+                <button type="button" class="list-group-item list-group-item-action" data-order-id="${order.orderId}" onclick="selectOrderForPayment(${order.orderId})">
+                    Bàn ${order.tableId}
+                </button>`;
+        });
+    }
 
-        function openInvoiceModal(id) {
-            document.getElementById('invoiceForm').reset();
-            document.getElementById('invoiceId').value = id || '';
-            document.getElementById('invoiceDiscount').value = 0;
-            if (id) {
-                const inv = invoices.find(x=>x.id===id);
-                document.getElementById('invoiceCustomer').value = inv.customer;
-                document.getElementById('invoiceBranch').value = inv.branch;
-                document.getElementById('invoiceTime').value = inv.time;
-                document.getElementById('invoiceDiscount').value = inv.discount;
+    // Chọn một bàn để hiển thị chi tiết thanh toán
+    function selectOrderForPayment(orderId) {
+        currentOrderIdForPayment = orderId;
+        const order = activeOrders.find(o => o.orderId === orderId);
+        if (!order) return;
+
+        // Hiển thị khu vực thanh toán
+        document.getElementById('payment-section').style.display = 'block';
+        document.getElementById('payment-details-title').textContent = `Chi tiết thanh toán cho Bàn ${order.tableId}`;
+        
+        // Đánh dấu bàn được chọn
+        document.querySelectorAll('#table-list-for-payment .list-group-item').forEach(item => {
+            item.classList.remove('active');
+            if (parseInt(item.dataset.orderId) === orderId) {
+                item.classList.add('active');
             }
-            $('#invoiceModal').modal('show');
-        }
+        });
 
-        function saveInvoice() {
-            const idField = document.getElementById('invoiceId').value;
-            const cust = document.getElementById('invoiceCustomer').value;
-            const br = document.getElementById('invoiceBranch').value;
-            const time = document.getElementById('invoiceTime').value;
-            const discount = parseFloat(document.getElementById('invoiceDiscount').value) || 0;
-            if (!cust||!br||!time) return alert('Nhập đủ thông tin');
-            if (idField) {
-                const inv = invoices.find(x=>x.id==idField);
-                inv.customer=cust; inv.branch=br; inv.time=time; inv.discount=discount;
-            } else {
-                const newId = invoices.length?invoices[invoices.length-1].id+1:1;
-                invoices.push({id:newId, customer:cust, branch:br, time, discount});
-            }
-            renderInvoices(); $('#invoiceModal').modal('hide');
-            if (currentInvoice) showDetails(currentInvoice);
-        }
+        // Render chi tiết các món ăn
+        const itemsTbody = document.getElementById('invoice-items-table');
+        itemsTbody.innerHTML = '';
+        let subtotal = 0;
+        order.items.forEach(item => {
+            const dish = mockDishes.find(d => d.id === item.dishId);
+            const itemTotal = dish.price * item.quantity;
+            subtotal += itemTotal;
+            itemsTbody.innerHTML += `
+                <tr>
+                    <td>${dish.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>${dish.price.toLocaleString()}</td>
+                    <td>${itemTotal.toLocaleString()}</td>
+                </tr>`;
+        });
+        
+        // Cập nhật tổng tiền
+        const finalTotal = subtotal - order.discount;
+        document.getElementById('subtotal').textContent = subtotal.toLocaleString();
+        document.getElementById('discount').textContent = order.discount.toLocaleString();
+        document.getElementById('final-total').textContent = finalTotal.toLocaleString();
+    }
 
-        function deleteInvoice(id) {
-            if (!confirm('Xóa hoá đơn?')) return;
-            invoices = invoices.filter(x=>x.id!==id);
-            invoiceDetails = invoiceDetails.filter(d=>d.invoiceId!==id);
-            renderInvoices();
-            if (currentInvoice===id) { document.getElementById('detailSection').style.display='none'; }
-        }
+    // Hủy quy trình thanh toán
+    function cancelPayment() {
+        document.getElementById('payment-section').style.display = 'none';
+        currentOrderIdForPayment = null;
+        document.querySelectorAll('#table-list-for-payment .list-group-item').forEach(item => item.classList.remove('active'));
+    }
 
-        function showDetails(invoiceId) {
-            currentInvoice = invoiceId;
-            document.getElementById('detailSection').style.display='block';
-            document.getElementById('currentInvoiceId').textContent = invoiceId;
-            renderDetails();
-        }
 
-        function renderDetails() {
-            const tbody = document.getElementById('detailTable'); tbody.innerHTML='';
-            invoiceDetails.filter(d=>d.invoiceId===currentInvoice)
-                .forEach(d=>{
-                    const total = d.quantity*d.unitPrice;
-                    tbody.innerHTML += `
-                    <tr>
-                        <td>${d.dishId}</td>
-                        <td>${d.quantity}</td>
-                        <td>${d.unitPrice.toLocaleString()}</td>
-                        <td>${total.toLocaleString()}</td>
-                        <td>${d.note}</td>
-                        <td>
-                            <button class="btn btn-warning btn-sm" onclick="openDetailModal(${d.id})">Sửa</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteDetail(${d.id})">Xóa</button>
-                        </td>
-                    </tr>`;
-                });
+    // === THAY ĐỔI CHÍNH: CẬP NHẬT HÀM XỬ LÝ THANH TOÁN ===
+    function processPayment() {
+        if (!currentOrderIdForPayment) {
+            alert('Vui lòng chọn một bàn để thanh toán.');
+            return;
         }
+        const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
 
-        function openDetailModal(id) {
-            document.getElementById('detailForm').reset();
-            document.getElementById('detailId').value = id || '';
-            if (!currentInvoice) return alert('Chọn hoá đơn trước');
-            if (id) {
-                const d = invoiceDetails.find(x=>x.id===id);
-                document.getElementById('detailDishId').value = d.dishId;
-                document.getElementById('detailQuantity').value = d.quantity;
-                document.getElementById('detailUnitPrice').value = d.unitPrice;
-                document.getElementById('detailNote').value = d.note;
-            }
-            $('#detailModal').modal('show');
+        // Nếu là chuyển khoản, bắt đầu luồng riêng
+        if (paymentMethod === 'transfer') {
+            initiateBankTransfer();
+        } else {
+            // Nếu là tiền mặt hoặc thẻ, xử lý như cũ
+            finalizePayment(currentOrderIdForPayment, paymentMethod);
         }
+    }
 
-        function saveDetail() {
-            const idField = document.getElementById('detailId').value;
-            const dishId = document.getElementById('detailDishId').value;
-            const qty = parseFloat(document.getElementById('detailQuantity').value);
-            const price = parseFloat(document.getElementById('detailUnitPrice').value);
-            const note = document.getElementById('detailNote').value;
-            if (!dishId||!qty||!price) return alert('Nhập đủ thông tin');
-            if (idField) {
-                const d = invoiceDetails.find(x=>x.id==idField);
-                d.dishId=dishId; d.quantity=qty; d.unitPrice=price; d.note=note;
-            } else {
-                const newId = invoiceDetails.length?invoiceDetails[invoiceDetails.length-1].id+1:1;
-                invoiceDetails.push({id:newId, invoiceId:currentInvoice, dishId, quantity:qty, unitPrice:price, note});
-            }
-            renderDetails(); $('#detailModal').modal('hide');
-        }
+    // === THÊM MỚI: CÁC HÀM CHO LUỒNG CHUYỂN KHOẢN ===
 
-        function deleteDetail(id) {
-            if (!confirm('Xóa chi tiết?')) return;
-            invoiceDetails = invoiceDetails.filter(x=>x.id!==id);
-            renderDetails();
-        }
+    // Bước 1: Khởi tạo và hiển thị modal chuyển khoản
+    function initiateBankTransfer() {
+        const order = activeOrders.find(o => o.orderId === currentOrderIdForPayment);
+        const finalTotal = order.items.reduce((sum, item) => sum + mockDishes.find(d => d.id === item.dishId).price * item.quantity, 0) - order.discount;
 
-        // Khởi tạo
-        renderInvoices();
+        // Cập nhật thông tin lên modal
+        document.getElementById('payment-amount').textContent = finalTotal.toLocaleString();
+        const paymentContent = `TT HD${order.orderId}`; // Nội dung chuyển khoản
+        document.getElementById('payment-content').textContent = paymentContent;
+        
+        // Tạo mã QR động với thông tin thanh toán
+        const qrData = `Thanh toan cho Nha Hang ABC, So tien: ${finalTotal}, Noi dung: ${paymentContent}`;
+        const qrImg = document.getElementById('qr-code-img');
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrData)}`;
+        
+        // Hiển thị modal
+        $('#bank-transfer-modal').modal('show');
+
+        // Bước 2 & 3: Giả lập việc chờ và nhận tín hiệu từ ngân hàng
+        bankPaymentTimeout = setTimeout(() => {
+            // Bước 4: Hệ thống xác nhận đơn hàng đã thanh toán
+            handleBankConfirmation();
+        }, 7000); // Giả lập chờ 7 giây
+    }
+
+    // Hàm được gọi khi nhận được xác nhận (sau timeout)
+    function handleBankConfirmation() {
+        $('#bank-transfer-modal').modal('hide');
+        alert('Hệ thống đã nhận được thanh toán thành công từ ngân hàng!');
+        // Hoàn tất quy trình thanh toán
+        finalizePayment(currentOrderIdForPayment, 'transfer');
+    }
+
+    // Hủy giao dịch chuyển khoản
+    function cancelBankTransfer() {
+        clearTimeout(bankPaymentTimeout); // Hủy việc chờ xác nhận
+        $('#bank-transfer-modal').modal('hide');
+        alert('Giao dịch đã được hủy.');
+    }
+
+    // === THÊM MỚI: TÁCH LOGIC HOÀN TẤT THANH TOÁN RA HÀM RIÊNG ===
+    // Hàm này sẽ được gọi cho cả tiền mặt, thẻ, và sau khi chuyển khoản thành công
+    function finalizePayment(orderId, paymentMethod) {
+        const orderIndex = activeOrders.findIndex(o => o.orderId === orderId);
+        if (orderIndex === -1) return;
+        
+        const order = activeOrders[orderIndex];
+        const subtotal = order.items.reduce((sum, item) => sum + mockDishes.find(d => d.id === item.dishId).price * item.quantity, 0);
+
+        const newInvoice = {
+            id: paidInvoices.length + 1,
+            orderId: order.orderId, tableId: order.tableId, items: order.items,
+            subtotal: subtotal, discount: order.discount, finalTotal: subtotal - order.discount,
+            paymentMethod: paymentMethod, time: new Date()
+        };
+        paidInvoices.push(newInvoice);
+        showReceipt(newInvoice);
+
+        // Cập nhật trạng thái
+        activeOrders.splice(orderIndex, 1);
+        renderTablesForPayment();
+        cancelPayment(); // Reset giao diện
+    }
+    
+    // Hàm hiển thị hóa đơn (không đổi)
+    // Hiển thị modal hóa đơn
+    function showReceipt(invoice) {
+        const receiptContent = document.getElementById('receipt-content');
+        let itemsHtml = '';
+        invoice.items.forEach(item => {
+            const dish = mockDishes.find(d => d.id === item.dishId);
+            itemsHtml += `
+                <tr>
+                    <td>${dish.name}</td>
+                    <td>${item.quantity}</td>
+                    <td class="text-right">${(dish.price * item.quantity).toLocaleString()}</td>
+                </tr>`;
+        });
+
+        receiptContent.innerHTML = `
+            <div class="receipt-header">
+                <h5>Nhà hàng ABC</h5>
+                <p>HÓA ĐƠN BÁN LẺ</p>
+                <p>Mã HĐ: ${invoice.id}</p>
+            </div>
+            <p>Bàn: ${invoice.tableId}</p>
+            <p>Thời gian: ${invoice.time.toLocaleString('vi-VN')}</p>
+            <hr>
+            <table class="table table-borderless table-sm receipt-table">
+                <thead><tr><th>Món</th><th>SL</th><th class="text-right">T.Tiền</th></tr></thead>
+                <tbody>${itemsHtml}</tbody>
+            </table>
+            <hr>
+            <p>Tổng cộng: <span class="float-right">${invoice.subtotal.toLocaleString()}</span></p>
+            <p>Giảm giá: <span class="float-right">${invoice.discount.toLocaleString()}</span></p>
+            <p><strong>Thành tiền:</strong> <strong class="float-right">${invoice.finalTotal.toLocaleString()} VNĐ</strong></p>
+            <p>HTTT: ${invoice.paymentMethod === 'cash' ? 'Tiền mặt' : 'Thẻ'}</p>
+            <hr>
+            <p class="text-center">Cảm ơn quý khách!</p>
+        `;
+        $('#invoice-receipt-modal').modal('show');
+    }
+
+    // --- KHỞI CHẠY LẦN ĐẦU ---
+    document.addEventListener('DOMContentLoaded', renderTablesForPayment);
+    // (Các hàm render, selectOrderForPayment, cancelPayment, showReceipt giữ nguyên như code trước)
     </script>
 </body>
 </html>

@@ -3,26 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý nguyên liệu</title>
+    <title>Quản lý & Xuất Nguyên Liệu</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
-        body { padding: 20px; }
-        .btn { margin: 5px; }
+        body { padding: 20px; background-color: #f8f9fa; }
+        .modal-lg { max-width: 800px; }
+        .item-list { max-height: 250px; overflow-y: auto; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Quản lý nguyên liệu</h2>
-        <a href="dashboard.html" class="btn btn-secondary">Quay lại Dashboard</a>
-        <button class="btn btn-success" data-toggle="modal" data-target="#addIngredientModal">Thêm nguyên liệu</button>
-        <table class="table table-bordered">
-            <thead>
+        <h2>Quản lý Tồn kho Nguyên liệu</h2>
+        <a href="dashboard.html" class="btn btn-secondary mb-3"><i class="fas fa-arrow-left"></i> Quay lại Dashboard</a>
+        
+        <!-- THAY ĐỔI 1: Cung cấp cả hai nút chức năng chính -->
+        <button class="btn btn-success mb-3" onclick="openIngredientModal()">
+            <i class="fas fa-plus"></i> Thêm Nguyên Liệu Mới
+        </button>
+        <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#issueVoucherModal">
+            <i class="fas fa-dolly"></i> Tạo Phiếu Xuất Kho
+        </button>
+
+        <table class="table table-bordered table-hover">
+            <thead class="thead-light">
                 <tr>
-                    <th>Mã nguyên liệu</th>
-                    <th>Mã nhà cung cấp</th>
-                    <th>Tên nguyên liệu</th>
-                    <th>Số lượng</th>
-                    <th>Ghi chú</th>
+                    <th>Mã</th>
+                    <th>Tên Nguyên liệu</th>
+                    <th>Số lượng tồn</th>
+                    <th>Đơn vị</th>
+                    <th>Nhà cung cấp</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
@@ -30,25 +40,22 @@
         </table>
     </div>
 
-    <!-- Modal thêm nguyên liệu -->
-    <div class="modal fade" id="addIngredientModal" tabindex="-1" role="dialog" aria-labelledby="addIngredientModalLabel" aria-hidden="true">
+    <!-- ========================================================== -->
+    <!-- MODAL 1: THÊM MỚI / SỬA THÔNG TIN NGUYÊN LIỆU (ĐÃ KHÔI PHỤC) -->
+    <!-- ========================================================== -->
+    <div class="modal fade" id="ingredientModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addIngredientModalLabel">Thêm nguyên liệu</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <h5 class="modal-title" id="ingredientModalLabel">Thông tin Nguyên liệu</h5>
+                    <button type="button" class="close" data-dismiss="modal">×</button>
                 </div>
                 <div class="modal-body">
-                    <form id="addIngredientForm">
+                    <form id="ingredientForm">
+                        <input type="hidden" id="ingredientId">
                         <div class="form-group">
                             <label for="ingredientCode">Mã nguyên liệu</label>
                             <input type="text" class="form-control" id="ingredientCode" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="supplierCode">Mã nhà cung cấp</label>
-                            <input type="text" class="form-control" id="supplierCode" required>
                         </div>
                         <div class="form-group">
                             <label for="ingredientName">Tên nguyên liệu</label>
@@ -58,58 +65,61 @@
                             <label for="ingredientQuantity">Số lượng</label>
                             <input type="number" step="any" class="form-control" id="ingredientQuantity" required>
                         </div>
+                         <div class="form-group">
+                            <label for="ingredientUnit">Đơn vị tính</label>
+                            <input type="text" class="form-control" id="ingredientUnit" required>
+                        </div>
                         <div class="form-group">
-                            <label for="ingredientNote">Ghi chú</label>
-                            <textarea class="form-control" id="ingredientNote" rows="2"></textarea>
+                            <label for="supplierCode">Mã nhà cung cấp</label>
+                            <input type="text" class="form-control" id="supplierCode" required>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-primary" onclick="addIngredient()">Lưu</button>
+                    <button type="button" class="btn btn-primary" onclick="saveIngredient()">Lưu</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal sửa nguyên liệu -->
-    <div class="modal fade" id="editIngredientModal" tabindex="-1" role="dialog" aria-labelledby="editIngredientModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
+    <!-- ========================================================== -->
+    <!-- MODAL 2: TẠO PHIẾU XUẤT KHO (GIỮ NGUYÊN) -->
+    <!-- ========================================================== -->
+    <div class="modal fade" id="issueVoucherModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editIngredientModalLabel">Sửa nguyên liệu</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <h5 class="modal-title">Tạo Phiếu Xuất Kho</h5>
+                    <button type="button" class="close" data-dismiss="modal">×</button>
                 </div>
                 <div class="modal-body">
-                    <form id="editIngredientForm">
-                        <input type="hidden" id="editIngredientId">
+                    <form id="issueVoucherForm">
                         <div class="form-group">
-                            <label for="editIngredientCode">Mã nguyên liệu</label>
-                            <input type="text" class="form-control" id="editIngredientCode" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editSupplierCode">Mã nhà cung cấp</label>
-                            <input type="text" class="form-control" id="editSupplierCode" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editIngredientName">Tên nguyên liệu</label>
-                            <input type="text" class="form-control" id="editIngredientName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editIngredientQuantity">Số lượng</label>
-                            <input type="number" step="any" class="form-control" id="editIngredientQuantity" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editIngredientNote">Ghi chú</label>
-                            <textarea class="form-control" id="editIngredientNote" rows="2"></textarea>
+                            <label for="voucherNote">Ghi chú cho phiếu xuất</label>
+                            <input type="text" class="form-control" id="voucherNote">
                         </div>
                     </form>
+                    <hr>
+                    <label><b>Thêm nguyên liệu vào phiếu</b></label>
+                    <div class="card p-3">
+                        <div class="row">
+                            <div class="col-md-6"><label>Nguyên liệu</label><select class="form-control" id="ingredientSelect"></select></div>
+                            <div class="col-md-3"><label>Số lượng xuất</label><input type="number" step="any" class="form-control" id="quantityToIssue" min="0.1"></div>
+                            <div class="col-md-3 d-flex align-items-end"><button class="btn btn-info" onclick="addIngredientToVoucher()">Thêm vào phiếu</button></div>
+                        </div>
+                    </div>
+                    <h5 class="mt-4">Danh sách nguyên liệu cần xuất</h5>
+                    <div class="item-list">
+                        <table class="table table-sm">
+                            <thead><tr><th>Tên</th><th>SL xuất</th><th>Đơn vị</th><th>Xóa</th></tr></thead>
+                            <tbody id="pendingVoucherItems"></tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-                    <button type="button" class="btn btn-primary" onclick="saveIngredientEdit()">Lưu</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmIssueVoucher()">Xác nhận</button>
                 </div>
             </div>
         </div>
@@ -119,88 +129,152 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        let ingredients = [
-            { id: 1, code: 'NL001', supplier: 'NCC001', name: 'Thịt bò', quantity: 10, note: 'Nhập từ nhà cung cấp A' },
-            { id: 2, code: 'NL002', supplier: 'NCC002', name: 'Bún', quantity: 20, note: 'Bún tươi' }
-        ];
+    // --- DỮ LIỆU GIẢ ---
+    let inventory = [
+        { id: 1, code: 'NL001', supplier: 'NCC001', name: 'Thịt bò Úc', quantity: 10.5, unit: 'kg' },
+        { id: 2, code: 'NL002', supplier: 'NCC002', name: 'Bún tươi', quantity: 20, unit: 'kg' },
+        { id: 3, code: 'NL003', supplier: 'NCC001', name: 'Hành lá', quantity: 50, unit: 'bó' },
+        { id: 4, code: 'NL004', supplier: 'NCC003', name: 'Dầu ăn', quantity: 15, unit: 'lít' },
+    ];
+    let pendingVoucherItems = [];
 
-        function renderIngredients() {
-            const tableBody = document.getElementById('ingredientTable');
-            tableBody.innerHTML = '';
-            ingredients.forEach(item => {
-                const row = `
-                <tr>
-                    <td>${item.code}</td>
-                    <td>${item.supplier}</td>
-                    <td>${item.name}</td>
-                    <td>${item.quantity}</td>
-                    <td>${item.note}</td>
-                    <td>
-                        <button class="btn btn-warning" onclick="editIngredient(${item.id})">Sửa</button>
-                        <button class="btn btn-danger" onclick="deleteIngredient(${item.id})">Xóa</button>
-                    </td>
-                </tr>`;
-                tableBody.innerHTML += row;
-            });
-        }
+    // --- HÀM RENDER CHUNG ---
+    function renderInventory() {
+        const tableBody = document.getElementById('ingredientTable');
+        tableBody.innerHTML = '';
+        inventory.forEach(item => {
+            const row = `
+            <tr>
+                <td>${item.code}</td>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>${item.unit}</td>
+                <td>${item.supplier}</td>
+                <td>
+                    <!-- THAY ĐỔI 2: Thêm lại nút Sửa -->
+                    <button class="btn btn-warning btn-sm" onclick="openIngredientModal(${item.id})">Sửa</button>
+                </td>
+            </tr>`;
+            tableBody.innerHTML += row;
+        });
+    }
 
-        function addIngredient() {
-            const code = document.getElementById('ingredientCode').value;
-            const supplier = document.getElementById('supplierCode').value;
-            const name = document.getElementById('ingredientName').value;
-            const quantity = document.getElementById('ingredientQuantity').value;
-            const note = document.getElementById('ingredientNote').value;
-            if (code && supplier && name && quantity) {
-                const newId = ingredients.length ? ingredients[ingredients.length - 1].id + 1 : 1;
-                ingredients.push({ id: newId, code, supplier, name, quantity: parseFloat(quantity), note });
-                renderIngredients();
-                $('#addIngredientModal').modal('hide');
-                document.getElementById('addIngredientForm').reset();
-            } else {
-                alert('Vui lòng nhập đầy đủ thông tin!');
+    // ==========================================================
+    // KHỐI LOGIC 1: QUẢN LÝ TỒN KHO (Thêm/Sửa)
+    // ==========================================================
+    function openIngredientModal(id = null) {
+        const form = document.getElementById('ingredientForm');
+        form.reset();
+        document.getElementById('ingredientId').value = '';
+        const modalTitle = document.getElementById('ingredientModalLabel');
+        
+        if (id) {
+            // Chế độ Sửa
+            modalTitle.textContent = 'Sửa thông tin Nguyên liệu';
+            const item = inventory.find(i => i.id === id);
+            if (item) {
+                document.getElementById('ingredientId').value = item.id;
+                document.getElementById('ingredientCode').value = item.code;
+                document.getElementById('ingredientName').value = item.name;
+                document.getElementById('ingredientQuantity').value = item.quantity;
+                document.getElementById('ingredientUnit').value = item.unit;
+                document.getElementById('supplierCode').value = item.supplier;
             }
+        } else {
+            // Chế độ Thêm mới
+            modalTitle.textContent = 'Thêm Nguyên liệu mới';
+        }
+        $('#ingredientModal').modal('show');
+    }
+
+    function saveIngredient() {
+        const id = document.getElementById('ingredientId').value;
+        const code = document.getElementById('ingredientCode').value;
+        const name = document.getElementById('ingredientName').value;
+        const quantity = parseFloat(document.getElementById('ingredientQuantity').value);
+        const unit = document.getElementById('ingredientUnit').value;
+        const supplier = document.getElementById('supplierCode').value;
+
+        if (!code || !name || isNaN(quantity) || !unit || !supplier) {
+            return alert('Vui lòng điền đầy đủ thông tin!');
         }
 
-        function editIngredient(id) {
-            const item = ingredients.find(i => i.id === id);
-            document.getElementById('editIngredientId').value = item.id;
-            document.getElementById('editIngredientCode').value = item.code;
-            document.getElementById('editSupplierCode').value = item.supplier;
-            document.getElementById('editIngredientName').value = item.name;
-            document.getElementById('editIngredientQuantity').value = item.quantity;
-            document.getElementById('editIngredientNote').value = item.note;
-            $('#editIngredientModal').modal('show');
+        if (id) {
+            // Cập nhật
+            const item = inventory.find(i => i.id == id);
+            Object.assign(item, { code, name, quantity, unit, supplier });
+        } else {
+            // Thêm mới
+            const newId = inventory.length ? Math.max(...inventory.map(i => i.id)) + 1 : 1;
+            inventory.push({ id: newId, code, name, quantity, unit, supplier });
         }
+        renderInventory();
+        $('#ingredientModal').modal('hide');
+    }
 
-        function saveIngredientEdit() {
-            const id = parseInt(document.getElementById('editIngredientId').value);
-            const code = document.getElementById('editIngredientCode').value;
-            const supplier = document.getElementById('editSupplierCode').value;
-            const name = document.getElementById('editIngredientName').value;
-            const quantity = document.getElementById('editIngredientQuantity').value;
-            const note = document.getElementById('editIngredientNote').value;
-            if (code && supplier && name && quantity) {
-                const item = ingredients.find(i => i.id === id);
-                item.code = code;
-                item.supplier = supplier;
-                item.name = name;
-                item.quantity = parseFloat(quantity);
-                item.note = note;
-                renderIngredients();
-                $('#editIngredientModal').modal('hide');
-            } else {
-                alert('Vui lòng nhập đầy đủ thông tin!');
+    // ==========================================================
+    // KHỐI LOGIC 2: XUẤT KHO NGUYÊN LIỆU (Giữ nguyên)
+    // ==========================================================
+    $('#issueVoucherModal').on('show.bs.modal', function () {
+        pendingVoucherItems = [];
+        renderPendingVoucherItems();
+        document.getElementById('issueVoucherForm').reset();
+        const select = document.getElementById('ingredientSelect');
+        select.innerHTML = inventory.map(item => 
+            `<option value="${item.id}">${item.name} (Tồn: ${item.quantity} ${item.unit})</option>`
+        ).join('');
+    });
+
+    function addIngredientToVoucher() {
+        const ingredientId = parseInt(document.getElementById('ingredientSelect').value);
+        const quantityToIssue = parseFloat(document.getElementById('quantityToIssue').value);
+        if (!ingredientId || isNaN(quantityToIssue) || quantityToIssue <= 0) {
+            return alert('Vui lòng chọn nguyên liệu và nhập số lượng hợp lệ!');
+        }
+        const inventoryItem = inventory.find(i => i.id === ingredientId);
+        if (quantityToIssue > inventoryItem.quantity) {
+            return alert(`Không đủ tồn kho! "${inventoryItem.name}" chỉ còn ${inventoryItem.quantity} ${inventoryItem.unit}.`);
+        }
+        const existingItem = pendingVoucherItems.find(item => item.id === ingredientId);
+        if (existingItem) {
+            existingItem.quantity += quantityToIssue;
+        } else {
+            pendingVoucherItems.push({ id: inventoryItem.id, name: inventoryItem.name, quantity: quantityToIssue, unit: inventoryItem.unit });
+        }
+        renderPendingVoucherItems();
+    }
+
+    function renderPendingVoucherItems() {
+        const tbody = document.getElementById('pendingVoucherItems');
+        tbody.innerHTML = '';
+        pendingVoucherItems.forEach(item => {
+            tbody.innerHTML += `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.unit}</td><td><button class="btn btn-danger btn-sm" onclick="removePendingVoucherItem(${item.id})">×</button></td></tr>`;
+        });
+    }
+
+    function removePendingVoucherItem(ingredientId) {
+        pendingVoucherItems = pendingVoucherItems.filter(item => item.id !== ingredientId);
+        renderPendingVoucherItems();
+    }
+
+    function confirmIssueVoucher() {
+        if (pendingVoucherItems.length === 0) {
+            return alert('Phiếu xuất trống. Vui lòng thêm ít nhất một nguyên liệu.');
+        }
+        pendingVoucherItems.forEach(itemToIssue => {
+            const inventoryItem = inventory.find(i => i.id === itemToIssue.id);
+            if (inventoryItem) {
+                inventoryItem.quantity -= itemToIssue.quantity;
+                inventoryItem.quantity = Math.round(inventoryItem.quantity * 100) / 100;
             }
-        }
+        });
+        alert('Tạo phiếu xuất thành công!');
+        renderInventory();
+        $('#issueVoucherModal').modal('hide');
+    }
 
-        function deleteIngredient(id) {
-            if (confirm('Bạn có chắc muốn xóa nguyên liệu này?')) {
-                ingredients = ingredients.filter(i => i.id !== id);
-                renderIngredients();
-            }
-        }
-
-        renderIngredients();
+    // --- KHỞI CHẠY LẦN ĐẦU ---
+    renderInventory();
     </script>
 </body>
 </html>

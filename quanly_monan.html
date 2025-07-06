@@ -67,12 +67,12 @@
         </div>
     </div>
 
-    <!-- Modal sửa món ăn -->
+    <!-- Modal Cập nhật món ăn -->
     <div class="modal fade" id="editDishModal" tabindex="-1" role="dialog" aria-labelledby="editDishModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editDishModalLabel">Sửa món ăn</h5>
+                    <h5 class="modal-title" id="editDishModalLabel">Cập nhật món ăn</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -125,7 +125,7 @@
                     <td>${d.note}</td>
                     <td>${d.price}</td>
                     <td>
-                        <button class="btn btn-warning" onclick="editDish(${d.id})">Sửa</button>
+                        <button class="btn btn-warning" onclick="editDish(${d.id})">Cập nhật</button>
                         <button class="btn btn-danger" onclick="deleteDish(${d.id})">Xóa</button>
                     </td>
                 </tr>`;
